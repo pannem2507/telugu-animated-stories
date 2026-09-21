@@ -1,0 +1,33 @@
+{
+  "id": "character_a",
+  "name": "Alex",
+  "base_orientation": "3/4_right",
+  "scale": 1.0,
+  "voice": {
+    "provider": "edge-tts",
+    "model": "en-US-GuyNeural",
+    "pitch": "+0Hz",
+    "rate": "+0%"
+  },
+  "subtitle_color": [120, 200, 255],
+  "arm_ik": {
+    "shoulder_r": [380, 290],
+    "shoulder_l": [420, 290],
+    "skin_color": [215, 160, 120],
+    "sleeve_color": [60, 100, 180],
+    "arm_thickness": 22
+  },
+  "landmarks": {
+    "brow_l_inner": [270, 115],
+    "brow_l_peak": [245, 108],
+    "brow_l_outer": [220, 120],
+    "brow_r_inner": [300, 115],
+    "brow_r_peak": [325, 108],
+    "brow_r_outer": [350, 120],
+    "eye_l": [250, 138],
+    "eye_r": [310, 138],
+    "mouth_c": [280, 175],
+    "mouth_l": [255, 175],
+    "mouth_r": [305, 175]
+  }
+}

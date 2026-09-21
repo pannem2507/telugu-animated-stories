@@ -1,0 +1,13 @@
+{
+  "environments": {
+    "default_stage": {
+      "asset": "default_stage.png",
+      "stage_anchors": {
+        "left": { "x": 420, "y": 200, "orientation": "3/4_right" },
+        "center": { "x": 700, "y": 200, "orientation": "3/4_right" },
+        "right": { "x": 980, "y": 200, "orientation": "3/4_left" }
+      },
+      "default_effects": ["subtle_dust"]
+    }
+  }
+}

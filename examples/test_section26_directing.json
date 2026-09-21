@@ -1,0 +1,47 @@
+{
+  "title": "సెక్షన్ 26 - డైరెక్టింగ్ మరియు యానిమేషన్ పరీక్ష (Section 26 Directing & Animation Validation)",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "background": "village_winter_porch",
+      "effect": "snow",
+      "dialogues": [
+        {
+          "character": "atha",
+          "text": "చలికాలం పూర్తిగా ముదిరిపోయింది. ఈ చలిగాలిలో కట్టెలు కూడా తడిసిపోయాయి, వంట ఎలా అయ్యేది?",
+          "action": "shiver",
+          "camera": "wide",
+          "emotion": "shiver"
+        },
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు! నేను వచ్చాను. మీరు బయట ఇంత చలిలో ఉండకండి, కట్టెల కోసం నేను వెళ్తాను!",
+          "action": "walk_in_left",
+          "camera": "follow_walk",
+          "emotion": "happy"
+        },
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు, మన ఇంట్లో ఉన్న సమస్యలను నేను చూస్తూ ఊరుకోలేను. ఊళ్లోకి వెళ్లి ఎండు కట్టెలు వెతికి తీసుకొస్తాను.",
+          "action": "talk",
+          "camera": "medium_character",
+          "emotion": "pray"
+        },
+        {
+          "character": "atha",
+          "text": "ఏమే కోడలా! ఈ అర్ధరాత్రి పూట ఇంత చలిలో బయటకు వెళ్తానంటావా? ఎవరైనా ఎండు కట్టెలు ఇస్తారా?",
+          "action": "scold",
+          "camera": "speaker_closeup",
+          "emotion": "angry"
+        },
+        {
+          "character": "kodalu",
+          "text": "మీరు కంగారు పడకండి అత్తయ్య గారు! ఎంత కష్టమైనా సరే ఎండు కట్టెలు సాధించి తెస్తాను!",
+          "action": "talk",
+          "camera": "medium_two_shot",
+          "emotion": "happy"
+        }
+      ]
+    }
+  ]
+}

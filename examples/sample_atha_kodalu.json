@@ -1,0 +1,47 @@
+{
+  "title": "అత్తా కోడళ్ళ చేపల పచ్చడి (Atha vs Kodalu Chepala Pachadi)",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "background": "village_kitchen",
+      "dialogues": [
+        {
+          "character": "atha",
+          "text": "ఏమే కోడలా! నేను చెప్పిన చేపల పచ్చడి ఎంతవరకు వచ్చింది? వంటింట్లోంచి మంచి వాసన వస్తోంది!",
+          "action": "question"
+        },
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు! అన్నీ సిద్ధం చేశాను. చేప ముక్కల్ని శుభ్రంగా కడిగి, నూనెలో దోరగా వేయిస్తున్నాను.",
+          "action": "answer_polite"
+        },
+        {
+          "character": "atha",
+          "text": "మసాలాలు బాగా దట్టించావా లేదా? మా అబ్బాయికి కారం ఎక్కువ ఉండాలి సుమా!",
+          "action": "angry_curious"
+        },
+        {
+          "character": "kodalu",
+          "text": "అయ్యో మీ అబ్బాయి ఇష్టాలు నాకు తెలియవా అత్తయ్య గారు? ఆయనకి నచ్చేలా ఘుమఘుమలాడేలా చేస్తున్నాను!",
+          "action": "smile"
+        }
+      ]
+    },
+    {
+      "scene_id": 2,
+      "background": "village_porch",
+      "dialogues": [
+        {
+          "character": "atha",
+          "text": "బాగుందిలే! పచ్చడి జాడీల్లో నింపాక ముందుగా నాకు చూపించు. నేనే రుచి చూసి చెబుతాను!",
+          "action": "bossy"
+        },
+        {
+          "character": "kodalu",
+          "text": "సరే అత్తయ్య గారు! మీ ఆశీర్వాదం ఉంటే మన పచ్చడి ఊరంతా మెచ్చుకుంటుంది!",
+          "action": "laugh"
+        }
+      ]
+    }
+  ]
+}

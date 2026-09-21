@@ -1,0 +1,55 @@
+{
+  "title": "Visible Performance Benchmark: Atha & Kodalu",
+  "scenes": [
+    {
+      "id": "scene_confrontation",
+      "background": "village_winter_porch",
+      "effect": "snow",
+      "characters": ["atha", "kodalu"],
+      "dialogues": [
+        {
+          "character": "atha",
+          "text": "ఏమేయ్! ఎంతసేపు పడుకుంటావు? ఇంట్లో పనులన్నీ ఎవరు చేస్తారు? లే వెంటనే!",
+          "emotion": "scold",
+          "action": "scold",
+          "camera": "medium_two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్యా, బయట భరించలేని చలిగా ఉంది... ఒంట్లో అసలు ఓపిక లేదు అత్తయ్యా...",
+          "emotion": "cry",
+          "action": "weep",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "atha",
+          "text": "సాకులు చెప్పకు! వెళ్లి వంటగదిలో పొయ్యి వెలిగించి వేడి గంజి తీసుకురా!",
+          "emotion": "angry",
+          "action": "scold",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "kodalu",
+          "text": "సరే అత్తయ్యా... దేవుడా, మా ఆకలిని తీర్చే మార్గం చూపించు...",
+          "emotion": "pray",
+          "action": "pray",
+          "camera": "medium_two_shot"
+        },
+        {
+          "character": "narrator",
+          "text": "అప్పుడు ఆమె నిష్కల్మషమైన భక్తికి మెచ్చి అక్కడ ఒక మాయా పొయ్యి ప్రత్యక్షమైంది.",
+          "emotion": "neutral",
+          "action": "reveal_object",
+          "camera": "insert_object"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఆహా! ఎంత అద్భుతం! ఈ మాయా పొయ్యి మా కష్టాలను తీరుస్తుంది!",
+          "emotion": "happy",
+          "action": "carry",
+          "camera": "medium_two_shot"
+        }
+      ]
+    }
+  ]
+}

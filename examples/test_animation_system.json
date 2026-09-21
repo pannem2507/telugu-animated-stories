@@ -1,0 +1,42 @@
+{
+  "title": "యానిమేషన్ సిస్టమ్ పరీక్ష (Animation System Validation Test)",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "background": "village_winter_porch",
+      "effect": "snow",
+      "dialogues": [
+        {
+          "character": "atha",
+          "text": "బాబోయ్! ఈ గడ్డకట్టే చలిలో ఎముకలు కొరికే గాలి వీస్తోంది. ఆకలితో ప్రాణం పోతోంది!",
+          "action": "shiver",
+          "camera": "wide"
+        },
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు! ఇంత చలిగాలిలో బయట ఎందుకు కూర్చున్నారు? చలి జ్వరం వస్తుంది, లోపలికి రండి!",
+          "action": "walk_in_right",
+          "camera": "follow_walk"
+        },
+        {
+          "character": "atha",
+          "text": "లోపలికి వస్తే ఆకలి తీరుతుందా? ఇంట్లో తినడానికి ఏమైనా ఉంటే కదా! వెళ్లి ఏదైనా వేడిగా తీసుకురా!",
+          "action": "angry",
+          "camera": "speaker"
+        },
+        {
+          "character": "kodalu",
+          "text": "సరే అత్తయ్య గారు! ఇప్పుడే వంటగదిలోకి వెళ్లి పొయ్యి వెలిగించి వేడివేడిగా వండి తెస్తాను ఉండండి!",
+          "action": "gesture",
+          "camera": "speaker"
+        },
+        {
+          "character": "kodalu",
+          "text": "నేను వెంటనే వెళ్లి వేడి అన్నం తీసుకొస్తాను అత్తయ్య గారు!",
+          "action": "walk_out_right",
+          "camera": "wide"
+        }
+      ]
+    }
+  ]
+}

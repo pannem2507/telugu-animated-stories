@@ -1,0 +1,36 @@
+# Generated production output
+output/
+
+# Temporary QA / validation / analysis
+scratch/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary video/image files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+
+# Temporary renders
+*_render.png
+*_render.jpg
+*_validation.png

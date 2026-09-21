@@ -1,0 +1,519 @@
+{
+  "title": "చలికాలంలో పేద కోడలి మాయా పొయ్యి (Story 1 - Complete Master Screenplay)",
+  "description": "The complete 10:52 narrative of the Poor Daughter-in-law Anamika, Atha Sharada, Ramesh, Kids, Neighbors Saroja & Padma, and the divine Maharshi with the Magic Stove.",
+  "scenes": [
+    {
+      "name": "Scene 1: Porch - Atha Scolding & Firewood Crisis",
+      "background": "village_winter_porch",
+      "effect": "snow",
+      "actors": {
+        "atha": {
+          "x": 420,
+          "y": 280,
+          "orientation": "three_quarter_right",
+          "scale": 0.95
+        },
+        "kodalu": {
+          "x": 940,
+          "y": 280,
+          "orientation": "three_quarter_left",
+          "scale": 0.95
+        }
+      },
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "పూర్తిగా చీకటి పడింది. చలికాలం పైగా సన్నగా మంచు పడుతూ ఉండటంతో అత్తగారు శారద నిండుగా శాలువా కప్పుకొని అరుగు మీద నిలబడి వీధి వైపు చూస్తూ ఉంది.",
+          "emotion": "neutral",
+          "action": "narrate",
+          "camera": "establishing_wide"
+        },
+        {
+          "character": "atha",
+          "text": "నా మతిమరుపు వల్ల ఈరోజు నేను వంట కోసం కట్టెలు తీసి ఇంట్లో పెట్టడం మర్చిపోయాను! అయ్యో, ఈ మంచుకి తడిసిపోయి పచ్చిగా మారిపోయాయి, అసలు అంటుకోవట్లా!",
+          "emotion": "angry",
+          "action": "scold",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "atha",
+          "text": "ఏమే కోడలా అనామికా! ఇంట్లో పిల్లలు, పెద్దలు ఆకలితో అలమటిస్తున్నారు. ఇంత చలిలో ఎండిన కట్టెల కోసం నువ్వు ఎక్కడెక్కడ వెతుకుతావో ఏమో! త్వరగా వెళ్లి ఎండిన కట్టెలు తీసుకురా!",
+          "emotion": "scold",
+          "action": "scold",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు! మీరు ఏమాత్రం బాధపడకండి. నేను ఇప్పుడే ఊళ్లోకి వెళ్లి ఎవరినైనా బ్రతిమాలి కొన్ని ఎండిన కట్టెలు తీసుకొస్తాను. మన కుటుంబానికి వేడివేడిగా వంట చేసి పెడతాను!",
+          "emotion": "cower",
+          "action": "talk",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "నేను ఆలస్యం చేయకుండా ఇప్పుడే బయలుదేరుతున్నాను అత్తయ్య గారు!",
+          "emotion": "neutral",
+          "action": "walk_out_left",
+          "camera": "follow_walk"
+        },
+        {
+          "character": "narrator",
+          "text": "అని చెప్పి పేద కోడలు అనామిక చలి నుంచి రక్షణ కోసం సరైన శాలువా కూడా లేకుండా, చలికి ఏమాత్రం భయపడకుండా ఎండిన కట్టెల కోసం సరోజ ఇంటికి బయలుదేరింది.",
+          "emotion": "neutral",
+          "action": "narrate",
+          "camera": "wide"
+        }
+      ]
+    },
+    {
+      "name": "Scene 2: Village Street - Saroja's Harsh Rejection",
+      "background": "village_street_night",
+      "effect": "snow",
+      "actors": {
+        "kodalu": {
+          "x": 380,
+          "y": 280,
+          "orientation": "three_quarter_right",
+          "scale": 0.95
+        },
+        "saroja": {
+          "x": 880,
+          "y": 280,
+          "orientation": "three_quarter_left",
+          "scale": 0.95
+        }
+      },
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "అప్పటికే సరోజ వాళ్ళు బయట లైట్లు ఆపేసి దుప్పట్లు కప్పుకొని హాయిగా పడుకున్నారు. అనామిక వణుకుతూ వెళ్లి సరోజ తలుపు మీద గట్టిగా తట్టింది.",
+          "emotion": "neutral",
+          "action": "narrate",
+          "camera": "wide"
+        },
+        {
+          "character": "kodalu",
+          "text": "సరోజా అక్కా! తలుపు తీయి అక్కా! ఒక్కసారి బయటకు రా అక్కా!",
+          "emotion": "cower",
+          "action": "knock_door",
+          "camera": "medium_character"
+        },
+        {
+          "character": "saroja",
+          "text": "ఏంటి అనామికా! ఈ అర్ధరాత్రి ఇంత చలిలో వచ్చి తలుపు బాదుతున్నావ్? మా నిద్ర పాడుచేసి ఏం కావాలి నీకు?",
+          "emotion": "irritation",
+          "action": "talk",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "అక్కా! మా ఇంట్లో కట్టెలన్నీ మంచుకి తడిసిపోయాయి. వంట చేయడానికి కొంచెం ఎండిన కట్టెలు అప్పుగా ఇవ్వు అక్కా. రేపు ఉదయమే తిరిగి రెండింతలు ఎండిన కట్టెలు తెచ్చి ఇస్తాను!",
+          "emotion": "sad",
+          "action": "pray",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "saroja",
+          "text": "ఏం మాట్లాడుతున్నావ్ అనామికా! ఈ చలికాలంలో నా దగ్గరే కట్టెలు సరిపోవట్లేదు. నేను ఎవరికీ ఒక్క కట్టెపుల్ల కూడా ఇవ్వలేను. మళ్లీ వచ్చి విసిగించకు, తలుపు వేసేస్తున్నాను!",
+          "emotion": "angry",
+          "action": "scold",
+          "camera": "reaction_closeup"
+        },
+        {
+          "character": "narrator",
+          "text": "అని సరోజ మొహం మీదే తలుపు వేసేసింది. అనామిక కన్నీళ్లు తుడుచుకుంటూ పక్క వీధిలో ఉన్న సుధాకర్, పద్మల ఇంటికి నడిచింది.",
+          "emotion": "neutral",
+          "action": "narrate",
+          "camera": "follow_walk"
+        }
+      ]
+    },
+    {
+      "name": "Scene 3: Village Street - Padma & Sudhakar's House Rejection",
+      "background": "village_street_night",
+      "effect": "snow",
+      "actors": {
+        "kodalu": {
+          "x": 360,
+          "y": 280,
+          "orientation": "three_quarter_right",
+          "scale": 0.95
+        },
+        "padma": {
+          "x": 860,
+          "y": 280,
+          "orientation": "three_quarter_left",
+          "scale": 0.95
+        },
+        "gent": {
+          "x": 1050,
+          "y": 280,
+          "orientation": "three_quarter_left",
+          "scale": 0.95
+        }
+      },
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "సుధాకర్ ఇంట్లో తన భార్య పద్మతో కలిసి ఎండిన కట్టెల్ని లెక్కిస్తూ ఉంటాడు. బయట మంచు కురుస్తూ ఉండటంతో చలి తీవ్రత మరింత పెరిగింది.",
+          "emotion": "neutral",
+          "action": "narrate",
+          "camera": "wide"
+        },
+        {
+          "character": "gent",
+          "text": "పద్మా! ఈ ఉన్న ఎండిన కట్టెలు మరో రెండు రోజుల వరకు వస్తాయి. జాగ్రత్తగా వాడుకోవాలి.",
+          "emotion": "neutral",
+          "action": "talk",
+          "camera": "two_shot"
+        },
+        {
+          "character": "padma",
+          "text": "అవునండీ! రేపు ఎలాగైనా మీరు అడవికి వెళ్లి ఎక్కువ కట్టెలు కొట్టుకు రావాలి. చలి దంచేస్తోంది!",
+          "emotion": "neutral",
+          "action": "talk",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "kodalu",
+          "text": "సుధాకర్ తమ్ముడూ! పద్మక్కా! తలుపు తీయండి! పిల్లలు ఆకలితో ఏడుస్తున్నారు, వంట కోసం నాలుగు ఎండిన కట్టెలు ఇవ్వండి!",
+          "emotion": "cry",
+          "action": "knock_door",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "padma",
+          "text": "మా ఇంట్లో ఉన్న కట్టెలు మా వంటకే చాలవు అనామికా! ఊరికే దానం చేయడానికి మేము ధర్మసత్రం తెరవలేదు. ఇలా అర్ధరాత్రి ఇతరుల ఇళ్లకు రావడం మానుకో, పో ఇక్కడినుంచి!",
+          "emotion": "scold",
+          "action": "scold",
+          "camera": "two_shot"
+        },
+        {
+          "character": "gent",
+          "text": "అక్కా! మా పొలం దగ్గర చెరువు గట్టు దాటితే ఎండిన కట్టెలు దొరకొచ్చు. కానీ ఆ చెరువు గట్టున దెయ్యాలు తిరుగుతాయని ఊళ్లో అందరూ భయపడుతుంటారు!",
+          "emotion": "neutral",
+          "action": "talk",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "kodalu",
+          "text": "నా పిల్లల ఆకలి తీర్చడానికి నేను దెయ్యాలకైనా భయపడను తమ్ముడూ! నేను ఆ చెరువు గట్టు దాటుకొని వెళ్లి ఎండిన కట్టెలు వెతికి తెస్తాను!",
+          "emotion": "sad",
+          "action": "talk",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "narrator",
+          "text": "అని చెప్పి అనామిక ధైర్యంగా చెరువు గట్టు వైపు చీకట్లో ఒంటరిగా బయలుదేరింది.",
+          "emotion": "neutral",
+          "action": "narrate",
+          "camera": "follow_walk"
+        }
+      ]
+    },
+    {
+      "name": "Scene 4: Sacred Lake - Midnight Frost & Lamentation",
+      "background": "lake_tree_night",
+      "effect": "snow",
+      "actors": {
+        "kodalu": {
+          "x": 380,
+          "y": 280,
+          "orientation": "three_quarter_right",
+          "scale": 0.95
+        },
+        "maharshi": {
+          "x": 860,
+          "y": 260,
+          "orientation": "three_quarter_left",
+          "scale": 1.0
+        }
+      },
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "చేతిలో కాగడా పట్టుకొని నడుచుకుంటూ అనామిక ఊరు దాటి చెరువు గట్టు దగ్గరికి వచ్చింది. అంతా దట్టమైన చీకటి, గడ్డకట్టే చలి.",
+          "emotion": "neutral",
+          "action": "narrate",
+          "camera": "establishing_wide"
+        },
+        {
+          "character": "kodalu",
+          "text": "అయ్యో భగవంతుడా! ఊరంతా తిరిగినా ఒక్క ఎండిన కట్టెపుల్ల కూడా దొరకలేదా? ఇంట్లో పిల్లలు, అత్తయ్య ఆకలితో అలమటిస్తున్నారు. నేను ఖాళీ చేతులతో ఇంటికి ఎలా వెళ్లాలి?",
+          "emotion": "intense_crying",
+          "action": "cry",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "narrator",
+          "text": "అప్పుడు చెరువు గట్టున ఉన్న పెద్ద మర్రిచెట్టు కింద కూర్చొని లోక కళ్యాణం కోసం ఘోర తపస్సు చేసుకుంటున్న దివ్య మహర్షి కనిపించాడు.",
+          "emotion": "neutral",
+          "action": "narrate",
+          "camera": "wide"
+        },
+        {
+          "character": "maharshi",
+          "text": "ఓం నమః శివాయ... లోకాః సమస్తాః సుఖినోభవంతు...",
+          "emotion": "reverence",
+          "action": "meditate",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "kodalu",
+          "text": "మహాత్మా! నమస్కారం. ఈ గడ్డకట్టే చలిలో చెట్టు కింద కూర్చుని తపస్సు చేసుకుంటున్న దైవస్వరూపులారా!",
+          "emotion": "reverence",
+          "action": "pray",
+          "camera": "two_shot"
+        },
+        {
+          "character": "maharshi",
+          "text": "అమ్మా అనామికా! ఈ అర్ధరాత్రి వేళ, ఇంతటి భయంకరమైన చలిలో కన్నీళ్లతో ఇక్కడికి ఎందుకు వచ్చావు తల్లీ? నీ ఆరాటానికి కారణం ఏమిటి?",
+          "emotion": "neutral",
+          "action": "talk",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "kodalu",
+          "text": "స్వామీ! మా అత్తగారు ఇంట్లో కట్టెలు పెట్టడం మర్చిపోవడంతో మంచుకి తడిసిపోయాయి. ఇంట్లో పొయ్యి వెలగక పిల్లలు ఆకలితో ఏడుస్తున్నారు. ఊళ్లో ఎవరూ సహాయం చేయలేదు స్వామీ!",
+          "emotion": "crying",
+          "action": "cry",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "maharshi",
+          "text": "తల్లీ అనామికా! నీ కుటుంబంపై నీకున్న ప్రేమాభిమానాలు, నీ పవిత్రమైన నిస్వార్థ హృదయం నన్ను ఎంతగానో ఆకట్టుకున్నాయి. నీ కష్టాలు తీరే సమయం వచ్చింది తల్లీ!",
+          "emotion": "joy",
+          "action": "talk",
+          "camera": "two_shot"
+        }
+      ]
+    },
+    {
+      "name": "Scene 5: Sacred Lake - Divine Magic Stove Manifestation",
+      "background": "lake_tree_night",
+      "effect": "snow,magic",
+      "actors": {
+        "kodalu": {
+          "x": 380,
+          "y": 280,
+          "orientation": "three_quarter_right",
+          "scale": 0.95
+        },
+        "maharshi": {
+          "x": 860,
+          "y": 260,
+          "orientation": "three_quarter_left",
+          "scale": 1.0
+        }
+      },
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "మహర్షి తన దివ్య దృష్టితో చూసి చేతిని గాల్లో తిప్పగానే, స్వర్ణ కాంతులతో ప్రకాశిస్తూ ఒక అద్భుతమైన మాయా మట్టి పొయ్యి నేలపై ప్రత్యక్షమైంది!",
+          "emotion": "reverence",
+          "action": "reveal_object",
+          "camera": "object_insert"
+        },
+        {
+          "character": "maharshi",
+          "text": "అమ్మా! ఇది సామాన్యమైన మట్టి పొయ్యి కాదు. ఇది దేవతలు ప్రసాదించిన 'మాయా పొయ్యి'. దీనికి ఎలాంటి కట్టెలు, నిప్పు అవసరం లేదు!",
+          "emotion": "joy",
+          "action": "talk",
+          "camera": "two_shot"
+        },
+        {
+          "character": "maharshi",
+          "text": "నువ్వు స్వచ్ఛమైన మనసుతో ఈ పొయ్యిని తాకి నీకు కావాల్సిన వంట పేరు చెబితే చాలు తల్లి, క్షణాల్లో వేడివేడిగా ఘుమఘుమలాడే అమృతం లాంటి భోజనం ఇందులో ప్రత్యక్షమవుతుంది!",
+          "emotion": "joy",
+          "action": "talk",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఎంతటి అద్భుతం స్వామీ! మీ దయ వల్ల మా కుటుంబం ఆకలి తీరడమే కాకుండా, ఊళ్లో ఆకలితో ఉన్న పేదలందరికీ అన్నం పెట్టగలను. మీకు కోటి నమస్కారాలు!",
+          "emotion": "reverence",
+          "action": "pray",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "maharshi",
+          "text": "సంతోషం తల్లీ! ఈ మాయా పొయ్యిని తీసుకెళ్లి నీ కుటుంబంతో పాటు ఆకలితో ఉన్న అభాగ్యులందరినీ ఆదుకో. నీకు ఎల్లప్పుడూ శుభమే జరుగుతుంది!",
+          "emotion": "joy",
+          "action": "talk",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "kodalu",
+          "text": "స్వామి ఆశీర్వాదంతో ఈ మాయా పొయ్యిని తీసుకుని వెంటనే ఇంటికి బయలుదేరుతాను!",
+          "emotion": "relief",
+          "action": "carry",
+          "camera": "follow_walk"
+        }
+      ]
+    },
+    {
+      "name": "Scene 6: Porch - Family Anxiety & Kodalu's Return",
+      "background": "village_winter_porch",
+      "effect": "snow",
+      "actors": {
+        "atha": {
+          "x": 380,
+          "y": 280,
+          "orientation": "three_quarter_right",
+          "scale": 0.95
+        },
+        "gent": {
+          "x": 620,
+          "y": 280,
+          "orientation": "three_quarter_right",
+          "scale": 0.95
+        },
+        "kid": {
+          "x": 780,
+          "y": 340,
+          "orientation": "three_quarter_right",
+          "scale": 0.75
+        },
+        "kodalu": {
+          "x": 1050,
+          "y": 280,
+          "orientation": "three_quarter_left",
+          "scale": 0.95
+        }
+      },
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "ఈ విషయం తెలియక ఇంట్లో అత్తగారు శారద, కొడుకు రమేష్‌తో కలిసి కోడలి కోసం తీవ్రమైన ఆందోళనతో ఎదురుచూస్తూ ఉన్నారు.",
+          "emotion": "neutral",
+          "action": "narrate",
+          "camera": "wide"
+        },
+        {
+          "character": "atha",
+          "text": "బాబు రమేష్! కోడలు ఎండిన కట్టెలు తీసుకొస్తానని చెప్పి ఎప్పుడో వెళ్ళిందిరా! ఇంతవరకు రాలేదు. పిల్లలు ఆకలితో తల్లాడిపోతున్నారు. ఇంత చలిలో అనామిక ఎక్కడిదాకా వెళ్ళిందో ఏమో, వెళ్లి చూడండిరా!",
+          "emotion": "fear",
+          "action": "scold",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "gent",
+          "text": "అసలు ఇదంతా నీ వల్లే జరిగింది శారదా! కోడలు చెప్పినప్పుడు కట్టెలు తీసి ఇంట్లో పెట్టుంటే ఇప్పుడు మనకి ఇంత బాధ ఉండేది కాదుగా! ఇంత రాత్రి ఎక్కడికి వెళ్లిందో ఏంటో!",
+          "emotion": "irritation",
+          "action": "talk",
+          "camera": "two_shot"
+        },
+        {
+          "character": "atha",
+          "text": "అవును బాబు, కానీ నేనే కావాలని చేయలేదు కదా! నా మతిమరుపు వల్లే జరిగింది. ఇప్పుడు నన్ను తిట్టడం మానేసి వెళ్లి వెతకండి!",
+          "emotion": "fear",
+          "action": "talk",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు! రమేష్ బాబు! నేను వచ్చేశాను! మీరేమీ కంగారు పడకండి!",
+          "emotion": "joy",
+          "action": "walk_in_right",
+          "camera": "follow_walk"
+        },
+        {
+          "character": "atha",
+          "text": "అయ్యో కోడలా! ఎంతసేపటికి వచ్చావమ్మా! ఇంత చలిలో కట్టెలు దొరకలేదని ఏడ్చుకుంటూ వస్తావనుకున్నాను. చేతిలో ఆ మట్టి పొయ్యి ఏంటే?",
+          "emotion": "surprise",
+          "action": "talk",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు! ఇది సాదాసీదా పొయ్యి కాదు! చెరువు గట్టున తపస్సు చేసుకుంటున్న మహర్షి మన కష్టాలు చూసి ప్రసాదించిన 'మాయా పొయ్యి'! పదండి, వంటగదిలోకి వెళ్లి చూపిస్తాను!",
+          "emotion": "joy",
+          "action": "carry",
+          "camera": "two_shot"
+        }
+      ]
+    },
+    {
+      "name": "Scene 7: Kitchen - Miracle Feast & Annadanam",
+      "background": "village_winter_kitchen",
+      "effect": "steam,magic",
+      "actors": {
+        "kodalu": {
+          "x": 420,
+          "y": 280,
+          "orientation": "three_quarter_right",
+          "scale": 0.95
+        },
+        "atha": {
+          "x": 860,
+          "y": 280,
+          "orientation": "three_quarter_left",
+          "scale": 0.95
+        },
+        "gent": {
+          "x": 1050,
+          "y": 280,
+          "orientation": "three_quarter_left",
+          "scale": 0.95
+        },
+        "kid": {
+          "x": 1220,
+          "y": 380,
+          "orientation": "three_quarter_left",
+          "scale": 0.75
+        }
+      },
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "వంటగదిలో అనామిక మాయా పొయ్యిని ప్రతిష్టించి భక్తితో చేతులు జోడించింది. మరుక్షణమే బంగారు వెలుగులు చిమ్ముతూ ఘుమఘుమలాడే వేడివేడి అన్నం, పాయసం, నెయ్యి పొంగల్ పొయ్యిపై ప్రత్యక్షమయ్యాయి!",
+          "emotion": "reverence",
+          "action": "reveal_object",
+          "camera": "object_insert"
+        },
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు, రమేష్ బాబు! చూడండి, క్షణాల్లో వేడివేడి నెయ్యి పొంగల్, సాంబార్ అన్నం, పాయసం సిద్ధమైపోయాయి! అందరూ కడుపునిండా తినండి!",
+          "emotion": "joy",
+          "action": "cook",
+          "camera": "two_shot"
+        },
+        {
+          "character": "atha",
+          "text": "ఆహా! ఎంతటి సువాసన! నా కళ్లను నేనే నమ్మలేకపోతున్నాను! అమృతం లాంటి భోజనం కళ్లముందే తయారైంది!",
+          "emotion": "surprise",
+          "action": "talk",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "gent",
+          "text": "అమ్మా, అనామికా! ఎంత కమ్మటి భోజనం! ఇంత రుచికరమైన వంట నా జీవితంలో ఎప్పుడూ తినలేదు! ఆ మహర్షి దయ వల్ల మన ఆకలి బాధలన్నీ తీరిపోయాయి!",
+          "emotion": "joy",
+          "action": "eat",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "atha",
+          "text": "నిజమే కొడుకా! ఆ మహర్షి దైవ సమానుడు. మన పేదరికాన్ని, ఆకలిని దూరం చేశాడు. మన కోడలి పవిత్రమైన మనసే మన కుటుంబాన్ని కాపాడింది!",
+          "emotion": "relief",
+          "action": "talk",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఇకపై మన ఊరిలో ఎవరూ ఆకలితో నిద్రపోకూడదు అత్తయ్య గారు! ఈ మాయా పొయ్యితో ప్రతిరోజూ ఆకలితో ఉన్న పేదలందరికీ కడుపునిండా అన్నదానం చేస్తాను!",
+          "emotion": "joy",
+          "action": "pray",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "narrator",
+          "text": "మంచి మనసుతో ఇతరుల ఆకలిని తీర్చిన అనామిక కుటుంబాన్ని గ్రామస్తులంతా కొనియాడారు. సద్గుణం, దైవభక్తి ఉన్న ఇంట్లో కష్టాలు ఎన్నడూ నిలవవని ఈ కథ మనకు బోధిస్తుంది. ఇది ఇవాల్టి కథ. మరొక ఆసక్తికర కథలో మళ్ళీ కలుద్దాం, అంతవరకు సెలవు నమస్తే!",
+          "emotion": "joy",
+          "action": "overview",
+          "camera": "wide"
+        }
+      ]
+    }
+  ]
+}

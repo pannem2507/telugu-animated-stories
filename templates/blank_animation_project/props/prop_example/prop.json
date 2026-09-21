@@ -1,0 +1,27 @@
+{
+  "id": "lamp",
+  "name": "Oil Lamp",
+  "asset": "lamp.png",
+  "scale": 0.8,
+  "attachment_points": {
+    "hand_hold": {
+      "offset_x": 120,
+      "offset_y": 140
+    },
+    "table_rest": {
+      "offset_x": 0,
+      "offset_y": 0
+    }
+  },
+  "effects": {
+    "glow": {
+      "enabled": true,
+      "color": [255, 180, 50],
+      "max_radius": 120,
+      "rings": [
+        { "radius_multiplier": 1.0, "alpha": 30 },
+        { "radius_multiplier": 0.6, "alpha": 70 }
+      ]
+    }
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "title": "చలికాలంలో పట్నం కొడుకు - పల్లెటూరి అత్తామామలు (Story 2 - Complete Screenplay)",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "title": "పట్నంలో వెచ్చని గది - పిల్లల ప్రశ్న (Warm City Bedroom)",
+      "background": "city_bedroom_heater",
+      "effect": "",
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "డిసెంబర్ చలికాలంలో హైదరాబాద్ నగరంలోని ఒక విలాసవంతమైన అపార్ట్మెంట్‌లో రమేష్ రూమ్ హీటర్ వేసుకుని వెచ్చగా లాప్‌టాప్‌లో ఆఫీస్ వర్క్ చేసుకుంటున్నాడు.",
+          "action": "intro",
+          "camera": "establishing_wide",
+          "emotion": "neutral"
+        },
+        {
+          "character": "harish",
+          "text": "నాన్నా! మనం ఇక్కడ రూమ్ హీటర్ వేసుకుని ఎంత వెచ్చగా హాయిగా ఉన్నాం! మరి ఊళ్లో ఉన్న తాతయ్య, నానమ్మ ఈ చలిని ఎలా తట్టుకుంటున్నారు నాన్నా?",
+          "action": "talk",
+          "camera": "medium_character",
+          "emotion": "neutral"
+        },
+        {
+          "character": "bhavya",
+          "text": "అవును నాన్నా! వాళ్ల గుడిసెలో చలిగాలి ఎక్కువగా ఉంటుంది కదా, వాళ్లకు కూడా ఒక రూమ్ హీటర్ కొని పంపించొచ్చు కదా?",
+          "action": "talk",
+          "camera": "medium_character",
+          "emotion": "neutral"
+        },
+        {
+          "character": "ramesh",
+          "text": "అయ్యో పిల్లలూ! ఊరి పాత ఇళ్లలో ఇలాంటి పెద్ద ఎలక్ట్రిక్ హీటర్లు పెట్టడం కుదరదమ్మా. మీ తాతయ్య వాళ్లు చలిమంట వేసుకుని బాగానే ఉంటారులే!",
+          "action": "talk",
+          "camera": "speaker_closeup",
+          "emotion": "neutral"
+        }
+      ]
+    },
+    {
+      "scene_id": 2,
+      "title": "పల్లెటూరి గుడిసెలో చలిబాధ (Grandparents Shivering in Village Hut)",
+      "background": "village_winter_porch",
+      "effect": "snow",
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "మరోవైపు పల్లెటూరిలో రమేష్ తల్లిదండ్రులు శారద, ప్రసాద్ గడ్డకట్టే చలికి పాత దుప్పట్లు కప్పుకుని బయట చిన్న చలిమంట దగ్గర వణుకుతూ కూర్చున్నారు.",
+          "action": "intro",
+          "camera": "establishing_wide",
+          "emotion": "neutral"
+        },
+        {
+          "character": "atha",
+          "text": "ఏమయ్యా! ఈ చలిని తట్టుకోవడం నావల్ల కావట్లేదు. ఎముకలు కొరికేస్తోంది ఈ గాలి! పట్నంలో మన కొడుకు రమేష్ దగ్గరికి కొన్ని రోజులు వెళ్లి ఉందామయ్యా!",
+          "action": "shiver",
+          "camera": "medium_character",
+          "emotion": "shiver"
+        },
+        {
+          "character": "prasad",
+          "text": "శారదా! కొడుకు దగ్గరికి వెళ్లాలని నాకూ ఉంది. కానీ మన పెద్ద కోడలు అనామిక మనల్ని గౌరవంగా చూస్తుందో లేదోనని భయంగా ఉందే!",
+          "action": "talk",
+          "camera": "speaker_closeup",
+          "emotion": "sad"
+        },
+        {
+          "character": "atha",
+          "text": "మన సొంత కొడుకు ఇల్లు కదా! మన మనవళ్లను చూసి చాలా రోజులైంది. రేపు ఉదయమే ఫోన్ చేసి బయలుదేరుదాం!",
+          "action": "talk",
+          "camera": "medium_two_shot",
+          "emotion": "happy"
+        }
+      ]
+    },
+    {
+      "scene_id": 3,
+      "title": "కోడలు అనామిక సాకులు (Anamika's Phone Excuses)",
+      "background": "city_bedroom_heater",
+      "effect": "",
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "మరుసటి రోజు ఉదయం శారద పట్నంలోని కోడలు అనామికకు ఫోన్ చేసి తాము వస్తున్నట్లు చెప్పింది.",
+          "action": "intro",
+          "camera": "wide",
+          "emotion": "neutral"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఏంటి అత్తయ్య గారు! ఇప్పుడు పట్నం వస్తున్నారా? ఇక్కడ మాకు చాలా పనులు ఉన్నాయి, పిల్లలకి పరీక్షలు! మీరిక్కడికి వచ్చి ఏం చేస్తారు?",
+          "action": "scold",
+          "camera": "speaker_closeup",
+          "emotion": "angry"
+        },
+        {
+          "character": "atha",
+          "text": "అలా అనకే కోడలా! ఊళ్లో చలి చాలా తీవ్రంగా ఉంది, పిల్లలను కూడా చూసి చాలా రోజులైంది. నాలుగు రోజులు ఉండి వెళ్లిపోతాం!",
+          "action": "talk",
+          "camera": "medium_two_shot",
+          "emotion": "sad"
+        },
+        {
+          "character": "kodalu",
+          "text": "సరే రండి, కానీ ఎక్కువ రోజులు ఉండటానికి వీల్లేదు!",
+          "action": "scold",
+          "camera": "speaker_closeup",
+          "emotion": "angry"
+        }
+      ]
+    },
+    {
+      "scene_id": 4,
+      "title": "స్టోర్ రూమ్‌లో అత్తామామలు (Grandparents in Cold Storeroom)",
+      "background": "store_room_cold",
+      "effect": "",
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "అత్తామామలు పట్నం చేరుకోగానే, కోడలు అనామిక వారిని మంచి గదిలో కాకుండా వెనుక ఉన్న పాత సామాన్ల స్టోర్ రూమ్‌లో పడుకోమని చెప్పింది.",
+          "action": "intro",
+          "camera": "establishing_wide",
+          "emotion": "neutral"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఇంట్లో వేరే ఖాళీ గదులు లేవు. ఈ స్టోర్ రూమ్‌లోనే పాత చాప వేసుకుని పడుకోండి. హాల్లోకి ఎక్కువగా రావద్దు!",
+          "action": "scold",
+          "camera": "speaker_closeup",
+          "emotion": "angry"
+        },
+        {
+          "character": "prasad",
+          "text": "సరేలేమ్మా! మాకు ఏదో ఒక మూల చాలు. పిల్లలు క్షేమంగా ఉంటే మాకు అదే పదివేలు.",
+          "action": "talk",
+          "camera": "medium_character",
+          "emotion": "sad"
+        },
+        {
+          "character": "atha",
+          "text": "కిటికీలో నుంచి చలిగాలి సూదుల్లా గుచ్చుకుంటోంది ప్రసాద్ గారూ! మన కొడుకు ఇక్కడే ఉన్నా మనకు ఈ పరిస్థితి పట్టింది.",
+          "action": "shiver",
+          "camera": "speaker_closeup",
+          "emotion": "cry"
+        }
+      ]
+    },
+    {
+      "scene_id": 5,
+      "title": "మనవళ్ల ప్రేమ - కనువిప్పు (Children's Pure Love & Moral Awakening)",
+      "background": "store_room_cold",
+      "effect": "",
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "రాత్రి సమయంలో పిల్లలు హరీష్, భవ్య తమ తల్లికి తెలియకుండా వెచ్చని రగ్గులు తీసుకుని స్టోర్ రూమ్‌లోకి వచ్చారు.",
+          "action": "intro",
+          "camera": "wide",
+          "emotion": "neutral"
+        },
+        {
+          "character": "harish",
+          "text": "తాతయ్యా! నానమ్మా! మీరు ఇక్కడ చలిలో వణకడం మేము చూడలేం. ఇదిగో మా వెచ్చని రగ్గులు కప్పుకోండి!",
+          "action": "give_object",
+          "camera": "medium_character",
+          "emotion": "happy"
+        },
+        {
+          "character": "bhavya",
+          "text": "తాతయ్యా! మేము కూడా మీ దగ్గరే పడుకుని కబుర్లు వింటాం. మమ్మల్ని మీతోనే ఉండనివ్వండి!",
+          "action": "talk",
+          "camera": "speaker_closeup",
+          "emotion": "happy"
+        },
+        {
+          "character": "ramesh",
+          "text": "అనామికా! చూశావా మన పిల్లల ప్రేమను? మనం ఇంత పెద్ద ఇంట్లో ఉండి నా తల్లిదండ్రులను చలిలో నెట్టేస్తే, మన పిల్లలు మనకు నిజమైన సంస్కారాన్ని నేర్పారు!",
+          "action": "scold",
+          "camera": "medium_character",
+          "emotion": "angry"
+        },
+        {
+          "character": "kodalu",
+          "text": "నన్ను క్షమించండి అత్తయ్య గారు, మావయ్య గారు! అహంకారంతో తప్పు చేశాను. రండి, మనందరం వెచ్చని గదిలోకి వెళ్లి కలిసి ఉందాం!",
+          "action": "pray",
+          "camera": "speaker_closeup",
+          "emotion": "cry"
+        },
+        {
+          "character": "narrator",
+          "text": "తల్లిదండ్రులను గౌరవించి ప్రేమతో చూసుకునే కుటుంబంలోనే నిజమైన సంతోషం, దైవానుగ్రహం ఉంటాయని ఈ కథ సందేశం ఇస్తోంది. ఇది ఇవాల్టి కథ. మరొక ఆసక్తికర కథలో మళ్ళీ కలుద్దాం, నమస్తే.",
+          "action": "overview",
+          "camera": "wide",
+          "emotion": "happy"
+        }
+      ]
+    }
+  ]
+}

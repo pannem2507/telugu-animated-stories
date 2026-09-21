@@ -1,0 +1,19 @@
+{
+  "$schema": "../../docs/project_schema.md",
+  "title": "Blank Animation Project Template",
+  "language": "en-US",
+  "resolution": {
+    "width": 1920,
+    "height": 1080
+  },
+  "fps": 24,
+  "bgm": {
+    "track": "audio/ambient_theme.wav",
+    "volume_db": -22.0
+  },
+  "subtitle_settings": {
+    "font_family": "Arial.ttf",
+    "speaker_size": 28,
+    "text_size": 34
+  }
+}

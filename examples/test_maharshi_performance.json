@@ -1,0 +1,91 @@
+{
+  "title": "మహర్షి మరియు మాయా పొయ్యి - ఫేజ్ 2 టెస్ట్ (Phase 2 Maharshi Performance Validation)",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "title": "చెరువు గట్టున మహర్షి దర్శనం (Maharshi & The Magic Stove)",
+      "background": "lake_tree_night",
+      "effect": "snow",
+      "dialogues": [
+        {
+          "character": "narrator",
+          "text": "చీకటి రాత్రి వేళ, ఊరి బయట ఉన్న చెరువు గట్టున పురాతన మర్రిచెట్టు కింద ఒక పరమ పవిత్రమైన మహర్షి ప్రశాంతంగా ధ్యానంలో కూర్చుని ఉన్నారు.",
+          "action": "intro",
+          "camera": "establishing_wide",
+          "emotion": "neutral"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఈ గడ్డకట్టే చలిలో ఎముకలు కొరికే గాలి వీస్తోంది. ఊరంతా తిరిగినా ఎవరూ ఒక్క ఎండు కట్టెపుల్ల కూడా ఇవ్వలేదు. ఇంట్లో పిల్లలు ఆకలితో ఏడుస్తున్నారు!",
+          "action": "walk_in_right",
+          "camera": "follow_walk",
+          "emotion": "shiver"
+        },
+        {
+          "character": "kodalu",
+          "text": "అరే! ఆ పవిత్ర చెట్టు కింద ఎవరో మహనీయులు ప్రశాంతంగా ధ్యానం చేసుకుంటున్నారు! వారిని దర్శించుకుంటాను.",
+          "action": "walk_to_target",
+          "target": "maharshi",
+          "camera": "two_shot",
+          "emotion": "neutral"
+        },
+        {
+          "character": "kodalu",
+          "text": "మహాత్మా! మీకు నా భక్తిపూర్వక పాదాభివందనాలు. ఈ అర్ధరాత్రి వేళ మీ దివ్య దర్శనం నాకు లభించింది!",
+          "action": "pray_sequence",
+          "camera": "kodalu_medium",
+          "emotion": "pray"
+        },
+        {
+          "character": "maharshi",
+          "text": "ఓం నమః శివాయ... అమ్మా! ఎవరు నువ్వు? ఇంతటి గడ్డకట్టే చలిలో కన్నీళ్లతో ఇక్కడికి ఎందుకు వచ్చావు తల్లీ?",
+          "action": "talk",
+          "camera": "maharshi_reaction",
+          "emotion": "neutral"
+        },
+        {
+          "character": "kodalu",
+          "text": "స్వామీ! నా పేరు అనామిక. మా ఇంట్లో పొయ్యి వెలిగించడానికి ఒక్క ఎండు కట్టె కూడా లేదు. ఆకలితో అల్లాడుతున్న నా కుటుంబాన్ని చూసి గుండె పగిలిపోతోంది స్వామీ!",
+          "action": "cry_sequence",
+          "camera": "kodalu_closeup",
+          "emotion": "cry"
+        },
+        {
+          "character": "maharshi",
+          "text": "తల్లీ అనామికా! నీ నిస్వార్థమైన ప్రేమాభిమానాలు నన్ను ఎంతగానో కదిలించాయి. నీ కష్టాలు తీర్చే సమయం వచ్చింది, ఇదిగో దేవతలు ప్రసాదించిన ఈ 'మాయా పొయ్యి'ని స్వీకరించు!",
+          "action": "talk",
+          "camera": "maharshi_closeup",
+          "emotion": "happy"
+        },
+        {
+          "character": "narrator",
+          "text": "మహర్షి అనుగ్రహంతో ఆ పవిత్ర వేదికపై స్వర్ణ కాంతులతో ప్రకాశిస్తూ దివ్యమైన మాయా పొయ్యి సాక్షాత్కరించింది!",
+          "action": "reveal_object",
+          "camera": "object_insert",
+          "emotion": "neutral"
+        },
+        {
+          "character": "maharshi",
+          "text": "ఈ మాయా పొయ్యికి ఎలాంటి కట్టెలు, అగ్గి అవసరం లేదు తల్లీ! స్వచ్ఛమైన మనసుతో ఏ ఆహారం కోరినా అమృతం లాంటి భోజనం క్షణాల్లో సిద్ధమవుతుంది!",
+          "action": "talk",
+          "camera": "magic_wide",
+          "emotion": "happy"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఎంతటి అద్భుతం స్వామీ! మీ పాదాలకు కోటి నమస్కారాలు. నా కుటుంబంతో పాటు ఊళ్లో ఉన్న పేదలందరి ఆకలిని తీరుస్తాను!",
+          "action": "pickup_sequence",
+          "camera": "kodalu_reaction",
+          "emotion": "pray"
+        },
+        {
+          "character": "kodalu",
+          "text": "స్వామి ఆశీస్సులతో ఈ మాయా పొయ్యిని తీసుకుని వెంటనే ఇంటికి బయలుదేరుతాను!",
+          "action": "walk_out_right",
+          "camera": "follow_exit",
+          "emotion": "happy"
+        }
+      ]
+    }
+  ]
+}

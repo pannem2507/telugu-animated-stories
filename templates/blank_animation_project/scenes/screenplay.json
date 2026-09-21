@@ -1,0 +1,40 @@
+{
+  "title": "Blank Animation Project Template",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "background": "default_stage",
+      "effect": "subtle_dust",
+      "actors": {
+        "character_a": {
+          "x": 420,
+          "y": 200,
+          "orientation": "3/4_right",
+          "scale": 1.0
+        },
+        "character_b": {
+          "x": 980,
+          "y": 200,
+          "orientation": "3/4_left",
+          "scale": 1.0
+        }
+      },
+      "dialogues": [
+        {
+          "character": "character_a",
+          "text": "Welcome to our new animation project!",
+          "emotion": "happy",
+          "action": "speaking",
+          "camera": "medium_two_shot"
+        },
+        {
+          "character": "character_b",
+          "text": "The generic engine is fully modular and ready to render.",
+          "emotion": "neutral",
+          "action": "point",
+          "camera": "speaker_closeup"
+        }
+      ]
+    }
+  ]
+}
