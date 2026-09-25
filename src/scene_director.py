@@ -5,6 +5,7 @@ presence lifecycle (enter/exit), conversational dynamics, and camera shot select
 """
 
 from .conversation_director import ConversationDirector
+from .behavior_registry import BehaviorRegistry
 
 class SceneDirector:
     """
@@ -12,7 +13,7 @@ class SceneDirector:
     Ensures natural 3/4 staging, manages entrances, exits, walk targets,
     speaker focus, and listener reactions.
     """
-    def __init__(self):
+    def __init__(self, behavior_defs: dict = None):
         # Default conversational staging positions (natural ~580px spacing)
         self.two_shot_left = {"x": 380, "y": 180, "orientation": "3/4_right"}
         self.two_shot_right = {"x": 960, "y": 180, "orientation": "3/4_left"}
@@ -22,6 +23,15 @@ class SceneDirector:
         self.bed_stage = {"x": 360, "y": 190, "orientation": "3/4_right"}
         self.desk_stage = {"x": 1050, "y": 190, "orientation": "3/4_left"}
         self.conv_director = ConversationDirector()
+        self.behavior_registry = BehaviorRegistry(behavior_defs)
+
+    def register_behavior(self, name: str, data: dict):
+        """Dynamic behavior registration facade."""
+        return self.behavior_registry.register(name, data)
+
+    def get_behavior(self, name: str):
+        """Lookup behavior descriptor from registry."""
+        return self.behavior_registry.get(name)
         
     def setup_scene(self, scene: dict) -> dict:
         dialogues = scene.get("dialogues", [])
@@ -46,13 +56,13 @@ class SceneDirector:
             for char_id, info in scene["actors"].items():
                 c_clean = char_id.lower()
                 act = first_actions.get(c_clean, "speaking")
-                is_init_present = act not in ["walk_in", "walk_in_left", "walk_in_right", "enter", "enter_left", "enter_right"]
+                is_init_present = not self.behavior_registry.is_entry_action(act)
                 actors[c_clean] = {
                     "x": info.get("x", 400),
                     "y": info.get("y", 280),
                     "orientation": info.get("orientation", "three_quarter_right" if info.get("x", 400) < 700 else "three_quarter_left"),
                     "scale": info.get("scale", 0.95),
-                    "is_present": is_init_present,
+                    "is_present": info.get("is_present", is_init_present),
                     "action": act
                 }
             return actors
@@ -60,7 +70,7 @@ class SceneDirector:
         if len(characters_in_scene) == 1:
             c = characters_in_scene[0]
             action = first_actions[c]
-            is_init_present = action not in ["walk_in", "walk_in_left", "walk_in_right", "enter", "enter_left", "enter_right"]
+            is_init_present = not self.behavior_registry.is_entry_action(action)
             
             if is_kitchen:
                 stage_pos = self.stove_stage
@@ -103,16 +113,19 @@ class SceneDirector:
             else:
                 act1 = first_actions[c1]
                 act2 = first_actions[c2]
-                if act1 in ["walk_in_left", "enter_left"]:
+                side1 = self.behavior_registry.get_entry_side(act1)
+                side2 = self.behavior_registry.get_entry_side(act2)
+                
+                if side1 == "left":
                     left_char = c1
                     right_char = c2
-                elif act2 in ["walk_in_left", "enter_left"]:
+                elif side2 == "left":
                     left_char = c2
                     right_char = c1
-                elif act1 in ["walk_in_right", "enter_right", "walk_in", "enter"]:
+                elif side1 == "right":
                     right_char = c1
                     left_char = c2
-                elif act2 in ["walk_in_right", "enter_right", "walk_in", "enter"]:
+                elif side2 == "right":
                     right_char = c2
                     left_char = c1
                 else:
@@ -121,8 +134,8 @@ class SceneDirector:
                 left_pos = self.two_shot_left
                 right_pos = self.two_shot_right
             
-            is_c1_present = first_actions[left_char] not in ["walk_in", "walk_in_left", "walk_in_right", "enter", "enter_left", "enter_right"]
-            is_c2_present = first_actions[right_char] not in ["walk_in", "walk_in_left", "walk_in_right", "enter", "enter_left", "enter_right"]
+            is_c1_present = not self.behavior_registry.is_entry_action(first_actions[left_char])
+            is_c2_present = not self.behavior_registry.is_entry_action(first_actions[right_char])
             
             actors[left_char] = {
                 "x": left_pos["x"],
@@ -142,7 +155,7 @@ class SceneDirector:
             }
             if len(characters_in_scene) >= 3:
                 for c_extra in characters_in_scene[2:]:
-                    is_extra_present = first_actions[c_extra] not in ["walk_in", "walk_in_left", "walk_in_right", "enter", "enter_left", "enter_right"]
+                    is_extra_present = not self.behavior_registry.is_entry_action(first_actions[c_extra])
                     actors[c_extra] = {
                         "x": 660,
                         "y": 180,
@@ -160,16 +173,6 @@ class SceneDirector:
         emotion = dialogue_turn.get("emotion", "neutral")
         camera_tag = dialogue_turn.get("camera", "auto").lower()
         target_tag = dialogue_turn.get("target", "")
-        
-        # Consult conversation director for emotional beats & listeners
-        conv_plan = self.conv_director.direct_dialogue(
-            speaker=speaker,
-            text=dialogue_turn.get("text", ""),
-            emotion=emotion,
-            action_override=raw_action,
-            camera_override=camera_tag,
-            actors=actors
-        )
         
         # Determine physical actor for movement/actions
         phys_actor = dialogue_turn.get("action_actor")
@@ -192,92 +195,49 @@ class SceneDirector:
                     phys_actor = "padma" if "padma" in actors else None
                 elif target_tag in actors:
                     phys_actor = target_tag
+                
+                # Generic fallback: check if any actor name appears directly in dialogue text
+                if not phys_actor:
+                    for act_k in actors:
+                        if act_k in text_lower.lower():
+                            phys_actor = act_k
+                            break
 
-        # Detect movement type
-        is_walking = False
-        start_x, target_x = 0, 0
-        walk_actor = None
-        walk_frames = 0
-        walk_orientation = "3/4_right"
-        walk_type = "walk_right"
-        
         # Check text for transit cues if raw action is narrate
         t_text = dialogue_turn.get("text", "")
         if raw_action in ["narrate", "narrator"] and phys_actor and phys_actor in actors:
             if any(w in t_text for w in ["బయలుదేరింది", "నడిచింది", "వెళ్ళింది"]):
                 # If near right side, exit left; if near left side, exit right
                 cur_act_x = actors[phys_actor].get("x", 500)
-                if cur_act_x > 600:
-                    raw_action = "exit_left"
-                else:
-                    raw_action = "exit_right"
-        
-        if raw_action in ["walk_in_left", "enter_left", "walk_in"] and phys_actor and phys_actor in actors:
-            is_walking = True
-            walk_actor = phys_actor
-            actors[phys_actor]["is_present"] = True
-            start_x = -650
-            target_x = actors[phys_actor]["x"]
-            walk_frames = min(turn_frames, int(2.2 * fps))
-            walk_orientation = "3/4_right"
-            actors[phys_actor]["orientation"] = "3/4_right"
-            walk_type = "walk_right"
-            
-        elif raw_action in ["walk_in_right", "enter_right"] and phys_actor and phys_actor in actors:
-            is_walking = True
-            walk_actor = phys_actor
-            actors[phys_actor]["is_present"] = True
-            start_x = 2100
-            target_x = actors[phys_actor]["x"]
-            walk_frames = min(turn_frames, int(2.2 * fps))
-            walk_orientation = "3/4_left"
-            actors[phys_actor]["orientation"] = "3/4_left"
-            walk_type = "walk_left"
-            
-        elif raw_action in ["exit_left", "walk_out_left"] and phys_actor and phys_actor in actors:
-            is_walking = True
-            walk_actor = phys_actor
-            start_x = actors[phys_actor]["x"]
-            target_x = -650
-            walk_frames = min(turn_frames, int(2.2 * fps))
-            walk_orientation = "3/4_left"
-            walk_type = "walk_left"
-            
-        elif raw_action in ["exit_right", "walk_out_right", "exit", "walk_out"] and phys_actor and phys_actor in actors:
-            is_walking = True
-            walk_actor = phys_actor
-            start_x = actors[phys_actor]["x"]
-            target_x = 2100
-            walk_frames = min(turn_frames, int(2.2 * fps))
-            walk_orientation = "3/4_right"
-            walk_type = "walk_right"
-            
-        elif raw_action in ["walk_to_target", "walk_towards"] and phys_actor and phys_actor in actors:
-            is_walking = True
-            walk_actor = phys_actor
-            start_x = actors[phys_actor]["x"]
-            # Target position
-            if target_tag and target_tag in actors:
-                target_x = actors[target_tag]["x"] - 200 if actors[target_tag]["x"] > start_x else actors[target_tag]["x"] + 200
-            elif target_tag == "door":
-                target_x = 1500
-            elif target_tag == "stove":
-                target_x = 280
-            else:
-                target_x = 660
-            walk_frames = min(turn_frames, int(2.0 * fps))
-            walk_orientation = "3/4_right" if target_x >= start_x else "3/4_left"
-            walk_type = "walk_right" if target_x >= start_x else "walk_left"
-            
-        elif raw_action == "walk_toward_camera" and phys_actor and phys_actor in actors:
-            is_walking = True
-            walk_actor = phys_actor
-            start_x = actors[phys_actor]["x"]
-            target_x = actors[phys_actor]["x"]
-            walk_frames = min(turn_frames, int(1.8 * fps))
-            walk_orientation = "front"
-            walk_type = "walk_toward_camera"
-            
+                raw_action = "exit_left" if cur_act_x > 600 else "exit_right"
+
+        # Consult conversation director for emotional beats & listeners
+        conv_plan = self.conv_director.direct_dialogue(
+            speaker=speaker,
+            text=dialogue_turn.get("text", ""),
+            emotion=emotion,
+            action_override=raw_action,
+            camera_override=camera_tag,
+            actors=actors
+        )
+
+        # Plan movement via decoupled BehaviorRegistry
+        m_plan = self.behavior_registry.plan_movement(
+            action_name=raw_action,
+            phys_actor=phys_actor,
+            actors=actors,
+            target_tag=target_tag,
+            fps=fps,
+            turn_frames=turn_frames
+        )
+        is_walking = m_plan["is_walking"]
+        walk_actor = m_plan["walk_actor"]
+        walk_type = m_plan["walk_type"]
+        start_x = m_plan["start_x"]
+        target_x = m_plan["target_x"]
+        walk_frames = m_plan["walk_frames"]
+        walk_orientation = m_plan["walk_orientation"]
+
         # Determine camera shot
         if camera_tag != "auto":
             chosen_shot = camera_tag

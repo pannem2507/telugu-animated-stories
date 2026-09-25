@@ -11,6 +11,7 @@ Implements:
 
 import math
 import numpy as np
+from .prop_engine import GenericPropManager
 
 class AudioPerformanceAnalyzer:
     """
@@ -108,7 +109,7 @@ class ListenerReactionController:
         self.fps = fps
         self.phase_seeds = {
             "atha": 0.2, "kodalu": 1.7, "maharshi": 3.1,
-            "saroja": 4.5, "padma": 2.8, "gent": 5.2
+            "saroja": 4.5, "padma": 2.8, "gent": 5.2, "kid": 2.1, "father_in_law": 3.8
         }
         
     @staticmethod
@@ -119,7 +120,7 @@ class ListenerReactionController:
     def evaluate_listener(self, listener_id: str, speaker_id: str, emotion: str,
                           frame_idx: int, total_frames: int, listener_pos: tuple,
                           speaker_pos: tuple, speaker_audio_stress: float = 0.0) -> dict:
-        seed = self.phase_seeds.get(listener_id, 1.0)
+        seed = self.phase_seeds.get(listener_id, (abs(hash(listener_id)) % 10) * 0.65 + 0.5)
         t = (frame_idx * 0.08) + seed
         
         # 1. Orientation / Head look-at direction toward speaker
@@ -155,7 +156,7 @@ class ListenerReactionController:
         cower_scale_mod = 1.0
         reaction_head_rot = 0.0
         
-        if emotion_l in ["angry", "scold", "irritation", "peak_anger"]:
+        if emotion_l in ["angry", "scold", "irritation", "peak_anger", "anger"]:
             # Fear rises with latency and speaker audio stress
             fear_intensity = min(1.0, (0.75 + speaker_audio_stress * 0.25) * smooth_factor)
             # Continuous physical interpolation:
@@ -166,8 +167,17 @@ class ListenerReactionController:
             reaction_head_rot = fear_intensity * 7.5
             nod_angle *= (1.0 - fear_intensity * 0.8) # stiffens in fear
             face_emotion = "cower"
+
+        elif emotion_l in ["fear", "cower", "scared", "tremble"]:
+            fear_intensity = min(1.0, 0.85 * smooth_factor)
+            retreat_dir = 1.0 if (speaker_pos and speaker_pos[0] < listener_pos[0]) else -1.0
+            cower_x_offset = retreat_dir * (fear_intensity * 24.0)
+            cower_scale_mod = 1.0 - (fear_intensity * 0.06)
+            reaction_head_rot = fear_intensity * 6.0
+            nod_angle *= 0.3
+            face_emotion = "cower"
             
-        elif emotion_l in ["cry", "weep", "sad", "crying", "intense_crying"]:
+        elif emotion_l in ["cry", "weep", "sad", "sadness", "crying", "intense_crying"]:
             # Empathy softens posture, steps slightly forward toward speaker
             empathy_intensity = min(1.0, 0.85 * smooth_factor)
             advance_dir = -1.0 if (speaker_pos and speaker_pos[0] < listener_pos[0]) else 1.0
@@ -178,6 +188,22 @@ class ListenerReactionController:
         elif emotion_l in ["surprised", "surprise", "shock"]:
             face_emotion = "surprised"
             reaction_head_rot = -4.0 * smooth_factor
+
+        elif emotion_l in ["reverence", "pray", "namaste", "devotion", "bow"]:
+            face_emotion = "reverence"
+            reaction_head_rot = 3.5 * smooth_factor
+            empathy_intensity = min(1.0, 0.7 * smooth_factor)
+
+        elif emotion_l in ["relief", "sigh"]:
+            face_emotion = "relief"
+            reaction_head_rot = 2.0 * smooth_factor
+            empathy_intensity = min(1.0, 0.6 * smooth_factor)
+
+        elif emotion_l in ["happy", "joy", "excited", "cheerful"]:
+            face_emotion = "happy"
+            reaction_head_rot = -2.5 * smooth_factor
+            nod_angle *= 1.3
+            empathy_intensity = min(1.0, 0.8 * smooth_factor)
         else:
             if listener_id == "kodalu":
                 face_emotion = "sad"
@@ -185,9 +211,28 @@ class ListenerReactionController:
             else:
                 face_emotion = "neutral"
             
-        # 5. Organic Eyeblink
+        # 5. Organic Eyeblink & Reactive Limb Posture
         blink = ((frame_idx + int(seed * 35)) % 82) in [0, 1, 2]
         
+        list_arm_l = 0.0
+        list_arm_r = 0.0
+        list_torso = 0.0
+        if face_emotion == "cower":
+            list_arm_l = 14.0 * fear_intensity
+            list_arm_r = -14.0 * fear_intensity
+            list_torso = 2.5 * fear_intensity
+        elif face_emotion == "reverence":
+            list_arm_l = 16.0 * smooth_factor
+            list_arm_r = -16.0 * smooth_factor
+            list_torso = 1.0 * smooth_factor
+        elif face_emotion == "relief":
+            list_arm_l = 4.0 * smooth_factor
+            list_arm_r = -4.0 * smooth_factor
+            list_torso = -1.0 * smooth_factor
+        elif face_emotion == "happy":
+            list_arm_l = 8.0 * smooth_factor
+            list_arm_r = -8.0 * smooth_factor
+
         return {
             "face_emotion": face_emotion,
             "fear_intensity": fear_intensity,
@@ -197,6 +242,9 @@ class ListenerReactionController:
             "head_rot": head_look_angle + nod_angle + reaction_head_rot,
             "sway_x": sway_x,
             "sway_y": sway_y,
+            "left_arm_rot": list_arm_l,
+            "right_arm_rot": list_arm_r,
+            "torso_roll": list_torso,
             "is_blinking": blink
         }
 
@@ -237,6 +285,13 @@ class PerformanceTimeline:
             (0.0, 0.5, "cook", 4.0, 2.0),
             (3.0, 0.7, "cook", 4.0, 2.0),
             (6.0, 0.5, "cook", 4.0, 2.0)
+        ],
+        "shiver_timeline": [
+            # (timestamp_sec, emotion_intensity, gesture, head_accent, torso_lean)
+            (0.0, 0.6, "shiver", 3.0, 1.5),
+            (1.5, 0.9, "shiver", 5.0, 2.0),
+            (4.0, 0.95, "shiver", 4.5, 2.0),
+            (8.0, 0.7, "shiver", 2.0, 1.0)
         ]
     }
     
@@ -332,51 +387,33 @@ class PerformanceTimeline:
                 "chest_sink": 0.0
             }
 
-class ObjectManager:
+class ObjectManager(GenericPropManager):
     """
-    Manages interactive props on stage:
+    Manages interactive props on stage dynamically via GenericPropManager:
     - Coordinates, alpha, glow, held status, character attachment via hand IK
+    - Fully backwards-compatible with legacy .objects dict and methods.
     """
-    def __init__(self):
-        self.objects = {
-            "magic_stove": {
-                "id": "magic_stove",
-                "x": 840,
-                "y": 730,
-                "scale": 0.95,
-                "alpha": 0.0,
-                "glow_intensity": 0.0,
-                "is_held": False,
-                "held_by": None,
-                "visible": False
-            }
-        }
+    def __init__(self, props_dir: str = None, prop_configs: list = None):
+        super().__init__(props_dir=props_dir)
+        # Load magic_stove manifest if available, fallback to baseline registration
+        if "magic_stove" not in self.props:
+            loaded = self.load_prop_by_name("magic_stove")
+            if not loaded:
+                self.register_prop(
+                    prop_id="magic_stove",
+                    asset_name="magic_stove.png",
+                    x=840,
+                    y=730,
+                    scale=0.95,
+                    glow_color=(255, 215, 60),
+                    attachment_offsets={"waist_carry": {"right": (185, 245), "left": (100, 245)}}
+                )
+        if prop_configs:
+            for cfg in prop_configs:
+                self.load_prop_config(cfg)
         
     def reveal_object(self, obj_id: str, progress: float):
-        if obj_id in self.objects:
-            obj = self.objects[obj_id]
-            obj["visible"] = True
-            obj["alpha"] = min(1.0, progress * 1.2)
-            obj["glow_intensity"] = math.sin(min(1.0, progress) * math.pi) * 1.5 + 0.5
-            
-    def attach_to_character(self, obj_id: str, char_id: str):
-        if obj_id in self.objects:
-            obj = self.objects[obj_id]
-            obj["is_held"] = True
-            obj["held_by"] = char_id
-            obj["visible"] = True
-            obj["alpha"] = 1.0
-            obj["glow_intensity"] = 0.35
-            
-    def update_held_position(self, obj_id: str, char_x: int, char_y: int, y_bob: float = 0.0,
-                             orientation: str = "three_quarter_right", scale: float = 1.0):
-        if obj_id in self.objects and self.objects[obj_id]["is_held"]:
-            obj = self.objects[obj_id]
-            if "left" in orientation:
-                obj["x"] = char_x + int(100 * scale)
-            else:
-                obj["x"] = char_x + int(185 * scale)
-            obj["y"] = char_y + int(245 * scale) + int(y_bob)
+        self.reveal_prop(obj_id, progress)
 
 class PerformanceDirector:
     """
@@ -397,8 +434,34 @@ class PerformanceDirector:
         emotion = turn.get("emotion", "neutral").lower()
         camera_tag = turn.get("camera", "auto").lower()
         
-        # Select timeline ID
-        if emotion in ["cry", "weep", "crying", "intense_crying"] or "కన్నీళ్లు" in text or "ఏడుస్తూ" in text or raw_action in ["cry", "weep"]:
+        is_movement = any(raw_action.startswith(p) for p in ["walk", "enter", "exit", "move", "run", "leave"])
+
+        # Infer emotion from action and Telugu text cues if not explicitly specified
+        if emotion == "neutral":
+            if raw_action in ["angry", "scold", "peak_anger", "irritation"] or "కోపం" in text or "కోపంగా" in text:
+                emotion = "angry"
+            elif raw_action in ["cry", "weep", "crying", "intense_crying"] or "కన్నీళ్లు" in text or "ఏడుస్తూ" in text or "బాధ" in text:
+                emotion = "cry"
+            elif raw_action in ["sad", "sadness", "worry", "distress"]:
+                emotion = "sad"
+            elif raw_action in ["shiver", "cold"] or (( "చలి" in text or "గడ్డకట్టే" in text ) and not is_movement):
+                emotion = "shiver"
+            elif raw_action in ["fear", "cower", "scared", "tremble"] or "భయం" in text:
+                emotion = "fear"
+            elif raw_action in ["surprise", "shock", "surprised"] or "ఆశ్చర్యం" in text or "బాబోయ్" in text:
+                emotion = "surprise"
+            elif raw_action in ["relief", "sigh"]:
+                emotion = "relief"
+            elif raw_action in ["joy", "happy", "excited", "cheerful"] or "సంతోషం" in text:
+                emotion = "joy"
+            elif raw_action in ["pray", "namaste", "reverence", "devotion", "bow"] or "నమస్కారం" in text:
+                emotion = "reverence"
+
+        # Select timeline ID (movement actions always preserve movement performance type)
+        if is_movement:
+            timeline_id = "standard_timeline"
+            perf_type = raw_action
+        elif emotion in ["cry", "weep", "crying", "intense_crying"] or "కన్నీళ్లు" in text or "ఏడుస్తూ" in text or raw_action in ["cry", "weep"]:
             timeline_id = "cry_timeline"
             perf_type = "cry_sequence"
         elif emotion in ["angry", "scold", "irritation", "peak_anger"] or "కోపంగా" in text or raw_action in ["angry", "scold"]:
@@ -410,6 +473,9 @@ class PerformanceDirector:
         elif raw_action in ["cook", "use_stove"]:
             timeline_id = "cook_timeline"
             perf_type = "cook_sequence"
+        elif emotion == "shiver" or raw_action in ["shiver", "cold"]:
+            timeline_id = "shiver_timeline"
+            perf_type = "shiver"
         else:
             timeline_id = "standard_timeline"
             perf_type = raw_action
@@ -456,7 +522,12 @@ class PerformanceDirector:
         }
 
     def evaluate_acting_frame(self, performance_type: str, frame_idx: int, total_frames: int,
-                              is_speaker: bool, walk_state: dict = None) -> dict:
+                              is_speaker: bool, walk_state: dict = None,
+                              audio_stress: float = 0.0, is_strike_beat: bool = False,
+                              char_id: str = None) -> dict:
+        from .animation_engine import GestureController
+        g_state = GestureController.evaluate(performance_type, frame_idx, total_frames, is_speaker, char_id=char_id)
+
         if "cry" in performance_type or "weep" in performance_type:
             tl_id = "cry_timeline"
         elif "scold" in performance_type or "angry" in performance_type or "point" in performance_type or "irritation" in performance_type:
@@ -469,15 +540,34 @@ class PerformanceDirector:
             tl_id = "standard_timeline"
             
         data = PerformanceTimeline.evaluate(tl_id, frame_idx / 24.0)
-        bob = math.sin(frame_idx * 0.45) * 3.0 if is_speaker else math.sin(frame_idx * 0.2) * 1.5
+        char_seed = (abs(hash(char_id)) % 13) * 0.45 if char_id else 0.0
+        bob = math.sin((frame_idx * 0.45) + char_seed) * 3.0 if is_speaker else math.sin((frame_idx * 0.2) + char_seed) * 1.5
+        
+        # Audio-driven gesture pulse on stressed syllables and speech emphasis beats
+        arm_pulse = (audio_stress * 7.0 + (5.0 if is_strike_beat else 0.0)) if is_speaker else 0.0
+        base_r = g_state.get("right_arm_rot", 0.0)
+        base_l = g_state.get("left_arm_rot", 0.0)
+        if base_r < -2.0:
+            final_r = base_r - arm_pulse
+            final_l = base_l + arm_pulse * 0.4
+        elif base_l > 2.0:
+            final_l = base_l + arm_pulse
+            final_r = base_r - arm_pulse * 0.4
+        elif is_speaker:
+            final_r = base_r - arm_pulse
+            final_l = base_l + arm_pulse * 0.5
+        else:
+            final_r = base_r
+            final_l = base_l
+
         return {
-            "head_rot": data.get("head_accent", 0.0),
-            "left_arm_rot": 0.0,
-            "right_arm_rot": 0.0,
-            "jitter_x": 0.0,
-            "jitter_y": 0.0,
-            "bob_y": bob,
-            "torso_roll": data.get("torso_lean", 0.0),
-            "scale_x": 1.0,
-            "scale_y": 1.0
+            "head_rot": g_state.get("head_rot", 0.0) + data.get("head_accent", 0.0),
+            "left_arm_rot": final_l,
+            "right_arm_rot": final_r,
+            "jitter_x": g_state.get("jitter_x", 0.0),
+            "jitter_y": g_state.get("jitter_y", 0.0),
+            "bob_y": g_state.get("bob_y", 0.0) + bob,
+            "torso_roll": g_state.get("torso_roll", 0.0) + data.get("torso_lean", 0.0),
+            "scale_x": g_state.get("scale_x", 1.0),
+            "scale_y": g_state.get("scale_y", 1.0)
         }

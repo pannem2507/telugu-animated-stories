@@ -1,0 +1,37 @@
+{
+  "project": {
+    "name": "Telugu Animated Stories",
+    "version": "0.1",
+    "schema_version": 1
+  },
+  "paths": {
+    "assets": "assets",
+    "characters": "characters",
+    "props": "props",
+    "environments": "environments",
+    "scenes": "examples",
+    "subtitles": "config/subtitles.json",
+    "magic_stove": "config/magic_stove.json",
+    "environment_config": "config/environments.json",
+    "shots": "config/shot_defs.json",
+    "behaviors": "config/behaviors.json"
+  },
+  "character_aliases": {
+    "saroja": "kanthamma",
+    "padma": "padma",
+    "sudhakar": "gent",
+    "ramesh": "gent",
+    "husband": "gent",
+    "son": "gent",
+    "prasad": "father_in_law",
+    "mamagaru": "father_in_law",
+    "harish": "kid",
+    "kid_boy": "kid",
+    "bhavya": "kid",
+    "sharada": "atha",
+    "anamika": "kodalu",
+    "maharshi": "maharshi",
+    "neighbor": "kanthamma",
+    "neighbor_man": "gent"
+  }
+}

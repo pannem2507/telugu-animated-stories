@@ -23,16 +23,45 @@ sys.path.insert(0, BASE_DIR)
 from src.script_parser import load_script
 from src.compositor import render_story_video
 from src.asset_generator import create_backgrounds, create_character_puppets, create_sample_audio_assets
+from src.project_scaffolder import create_project
+from src.project_config import load_project_config
 
 def main():
     parser = argparse.ArgumentParser(description="Automated Telugu 2D Animated Stories Video Generator")
     parser.add_argument("--script", type=str, default="examples/sample_atha_kodalu.json", help="Path to Telugu story JSON or TXT script")
     parser.add_argument("--output", type=str, default="output/atha_kodalu_animated.mp4", help="Path for rendered MP4 video")
     parser.add_argument("--fps", type=int, default=24, help="Frames per second (default: 24)")
+    parser.add_argument("--project", type=str, default=None, help="Path to project directory (default: current project)")
+    parser.add_argument("--create-project", type=str, default=None, help="Initialize a new project workspace at the target path")
+    parser.add_argument("--project-name", type=str, default="New Animation Project", help="Name for the newly created project")
+    parser.add_argument("--validate-project", type=str, default=None, help="Validate project workspace structure and manifest")
     args = parser.parse_args()
+
+    # Handle project validation
+    if args.validate_project:
+        from src.project_scaffolder import validate_project
+        report = validate_project(args.validate_project)
+        print(f"Validation for project at: {args.validate_project}")
+        print(f"  Status: {'VALID ✅' if report['valid'] else 'INVALID ❌'}")
+        if report['errors']:
+            print(f"  Errors: {report['errors']}")
+        if report['warnings']:
+            print(f"  Warnings: {report['warnings']}")
+        return
+
+    # Handle project scaffolding command
+    if args.create_project:
+        print(f"Creating new animation project at: {args.create_project}")
+        proj_path = create_project(args.create_project, project_name=args.project_name)
+        print(f"✅ Successfully initialized project at {proj_path}")
+        return
+
+    # Load project config for specified project
+    proj_cfg = load_project_config(args.project)
 
     print("=" * 60)
     print("  🎬 TELUGU ANIMATED STORIES AUTOMATION PIPELINE")
+    print(f"  Project: {proj_cfg.project.get('name', 'Telugu Animated Stories')}")
     print("=" * 60)
 
     # 1. Ensure all assets exist

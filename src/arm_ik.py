@@ -99,6 +99,46 @@ class ArmGestureRenderer:
             "sleeve_color": (75, 130, 75), # Green shirt
             "bangle_color": None,
             "arm_thickness": 22
+        },
+        "kanthamma": {
+            "shoulder_r": (370, 310),
+            "shoulder_l": (420, 315),
+            "skin_color": (200, 135, 95),
+            "sleeve_color": (180, 50, 60), # Maroon blouse
+            "bangle_color": (220, 180, 40),
+            "arm_thickness": 22
+        },
+        "saroja": {
+            "shoulder_r": (370, 310),
+            "shoulder_l": (420, 315),
+            "skin_color": (200, 135, 95),
+            "sleeve_color": (180, 50, 60),
+            "bangle_color": (220, 180, 40),
+            "arm_thickness": 22
+        },
+        "maharshi": {
+            "shoulder_r": (370, 300),
+            "shoulder_l": (420, 305),
+            "skin_color": (195, 130, 85),
+            "sleeve_color": (220, 110, 40), # Saffron robe
+            "bangle_color": None,
+            "arm_thickness": 22
+        },
+        "padma": {
+            "shoulder_r": (365, 290),
+            "shoulder_l": (385, 285),
+            "skin_color": (200, 130, 90),
+            "sleeve_color": (50, 140, 160),
+            "bangle_color": (220, 180, 40),
+            "arm_thickness": 20
+        },
+        "kid": {
+            "shoulder_r": (320, 420),
+            "shoulder_l": (360, 420),
+            "skin_color": (210, 145, 105),
+            "sleeve_color": (210, 80, 50),
+            "bangle_color": None,
+            "arm_thickness": 16
         }
     }
     
@@ -167,112 +207,8 @@ class ArmGestureRenderer:
                            audio_stress: float = 0.0,
                            world_target: tuple = None) -> Image.Image:
         """
-        Renders articulated arm overlay onto the character canvas.
-        Only renders for active gestures that diverge from the base illustrated pose.
+        Articulated arm kinematics are now rendered directly on the real character
+        illustration via localized shoulder-pivoted affine transforms in PuppetRenderer.
+        Returns the authentic illustrated canvas intact without stick arms or fake patches.
         """
-        if gesture in ["idle", "stand", "walk", "none"] or not gesture:
-            return canvas
-            
-        # 1. Folded hands occlusion patch for Kodalu to prevent 3rd arm artifact
-        working_canvas = canvas.copy()
-        if char_id == "kodalu" and gesture in ["cook", "reach", "give", "receive", "point", "wave", "wipe_face"]:
-            w, h = working_canvas.size
-            patch_mask = Image.new("L", (w, h), 0)
-            p_draw = ImageDraw.Draw(patch_mask)
-            p_draw.polygon([(225, 395), (360, 395), (365, 485), (220, 485)], fill=255)
-            patch_mask = patch_mask.filter(ImageFilter.GaussianBlur(radius=5.0))
-
-            saree_patch = Image.new("RGBA", (w, h), (155, 38, 42, 255))
-            pd = ImageDraw.Draw(saree_patch)
-            pd.line([(240, 400), (280, 485)], fill=(130, 28, 32, 255), width=4)
-            pd.line([(285, 395), (325, 485)], fill=(185, 145, 40, 180), width=3)
-            pd.line([(310, 395), (350, 480)], fill=(130, 28, 32, 255), width=3)
-            working_canvas = Image.composite(saree_patch, working_canvas, patch_mask)
-
-        cfg = self.CHAR_ARM_CONFIG.get(char_id, self.CHAR_ARM_CONFIG["kodalu"])
-        shoulder = cfg["shoulder_r"]
-        target = self.get_gesture_target(gesture, char_id, progress=progress, audio_stress=audio_stress)
-        
-        # Solve IK
-        elbow_bend = 1 if gesture not in ["wipe_face", "wave"] else -1
-        ik_res = self.solver.solve_ik(shoulder, target, elbow_dir=elbow_bend)
-        
-        p0 = (int(ik_res["shoulder"][0]), int(ik_res["shoulder"][1]))
-        pe = (int(ik_res["elbow"][0]), int(ik_res["elbow"][1]))
-        pw = (int(ik_res["wrist"][0]), int(ik_res["wrist"][1]))
-        
-        w, h = working_canvas.size
-        overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-        draw = ImageDraw.Draw(overlay)
-        
-        skin = (*cfg["skin_color"], 255)
-        skin_dark = (max(0, skin[0]-35), max(0, skin[1]-30), max(0, skin[2]-25), 255)
-        sleeve = (*cfg["sleeve_color"], 255)
-        arm_thick = cfg["arm_thickness"]
-        
-        # 1. Upper Arm (Shoulder to Elbow)
-        # Upper portion covered by blouse/sleeve
-        draw.line([p0, pe], fill=sleeve, width=arm_thick + 4)
-        draw.ellipse([(p0[0] - arm_thick//2 - 2, p0[1] - arm_thick//2 - 2),
-                      (p0[0] + arm_thick//2 + 2, p0[1] + arm_thick//2 + 2)], fill=sleeve)
-                      
-        # Lower portion of upper arm (skin)
-        sleeve_end = (int(p0[0] + (pe[0] - p0[0]) * 0.45), int(p0[1] + (pe[1] - p0[1]) * 0.45))
-        draw.line([sleeve_end, pe], fill=skin, width=arm_thick)
-        draw.ellipse([(pe[0] - arm_thick//2, pe[1] - arm_thick//2),
-                      (pe[0] + arm_thick//2, pe[1] + arm_thick//2)], fill=skin)
-                      
-        # 2. Forearm (Elbow to Wrist)
-        draw.line([pe, pw], fill=skin, width=int(arm_thick * 0.85))
-        
-        # 3. Bangles at wrist if female character
-        if cfg["bangle_color"]:
-            bangle = (*cfg["bangle_color"], 255)
-            # Draw 3 golden rings at wrist
-            for b_idx in [-6, -2, 2]:
-                bx = int(pe[0] + (pw[0] - pe[0]) * 0.88) + b_idx
-                by = int(pe[1] + (pw[1] - pe[1]) * 0.88)
-                draw.ellipse([(bx - 10, by - 6), (bx + 10, by + 6)], outline=bangle, width=2)
-                
-        # 4. Hand Poses
-        hw_dir_x = pw[0] - pe[0]
-        hw_dir_y = pw[1] - pe[1]
-        hand_len = math.sqrt(hw_dir_x**2 + hw_dir_y**2)
-        if hand_len > 1e-4:
-            nx = hw_dir_x / hand_len
-            ny = hw_dir_y / hand_len
-        else:
-            nx, ny = 1.0, 0.0
-            
-        if gesture == "point":
-            # Outstretched index finger pointing sharply along hand axis
-            palm_pos = pw
-            finger_tip = (int(pw[0] + nx * 38.0), int(pw[1] + ny * 38.0))
-            draw.ellipse([(palm_pos[0] - 8, palm_pos[1] - 8), (palm_pos[0] + 8, palm_pos[1] + 8)], fill=skin)
-            draw.line([palm_pos, finger_tip], fill=skin, width=7)
-            draw.line([palm_pos, finger_tip], fill=skin_dark, width=1)
-            draw.ellipse([(palm_pos[0] - 5, palm_pos[1] + 3), (palm_pos[0] + 5, palm_pos[1] + 12)], fill=skin_dark)
-            
-        elif gesture == "wipe_face":
-            # Curled fingers gently dabbing cheek
-            draw.ellipse([(pw[0] - 10, pw[1] - 10), (pw[0] + 10, pw[1] + 10)], fill=skin)
-            draw.arc([(pw[0] - 12, pw[1] - 12), (pw[0] + 12, pw[1] + 12)], start=20, end=160, fill=skin_dark, width=2)
-            
-        elif gesture == "pray":
-            # Two folded palms in Namaste
-            draw.ellipse([(pw[0] - 8, pw[1] - 16), (pw[0] + 8, pw[1] + 16)], fill=skin)
-            draw.line([(pw[0], pw[1] - 18), (pw[0], pw[1] + 14)], fill=skin_dark, width=2)
-            
-        elif gesture == "cook":
-            # Hand holding wooden/metal spoon stirring in pot
-            draw.ellipse([(pw[0] - 10, pw[1] + 4), (pw[0] + 10, pw[1] + 22)], fill=skin)
-            draw.line([(pw[0], pw[1] + 10), (pw[0] + 35, pw[1] + 45)], fill=(170, 170, 170, 255), width=5)
-            
-        else:
-            # Natural soft cupped hand
-            hand_end = (int(pw[0] + nx * 24.0), int(pw[1] + ny * 24.0))
-            draw.line([pw, hand_end], fill=skin, width=12)
-            draw.ellipse([(hand_end[0] - 6, hand_end[1] - 6), (hand_end[0] + 6, hand_end[1] + 6)], fill=skin)
-
-        working_canvas.alpha_composite(overlay)
-        return working_canvas
+        return canvas

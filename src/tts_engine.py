@@ -212,12 +212,20 @@ def synthesize_dialogue(text: str, character: str = "narrator", output_path: str
             "text": text
         }
         
-    asyncio.run(_synthesize_async(text, voice, pitch, rate, volume, output_path))
-    
-    # Convert mp3 to wav if necessary for precise waveform lipsyncing
-    from pydub import AudioSegment
-    sound = AudioSegment.from_file(output_path)
-    sound.export(wav_path, format="wav")
+    try:
+        async def _run_with_timeout():
+            await asyncio.wait_for(_synthesize_async(text, voice, pitch, rate, volume, output_path), timeout=8.0)
+        asyncio.run(_run_with_timeout())
+        from pydub import AudioSegment
+        sound = AudioSegment.from_file(output_path)
+        sound.export(wav_path, format="wav")
+    except Exception as e:
+        print(f"[TTS Warning] edge-tts synthesis failed or timed out ({e}). Using audio fallback.")
+        from pydub import AudioSegment
+        dur_ms = max(1800, min(4500, len(text) * 75))
+        fallback_audio = AudioSegment.silent(duration=dur_ms)
+        fallback_audio.export(wav_path, format="wav")
+        fallback_audio.export(output_path, format="mp3")
     
     duration = get_audio_duration(wav_path)
     

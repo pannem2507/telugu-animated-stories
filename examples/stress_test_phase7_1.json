@@ -1,0 +1,53 @@
+{
+  "title": "దృశ్య చలన మరియు లిప్-సింక్ ఒత్తిడి పరీక్ష (Phase 7.1 Visual Motion & Lip-Sync Stress Test)",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "background": "village_kitchen",
+      "dialogues": [
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు! వంటింట్లో ఏదైనా వేడిగా వండమంటారా?",
+          "action": "walk_in_left",
+          "camera": "follow_walk"
+        },
+        {
+          "character": "atha",
+          "text": "ఆకలితో ప్రాణం పోతోంది! వెంటనే వేడి అన్నం వండు!",
+          "action": "scold",
+          "camera": "speaker"
+        },
+        {
+          "character": "kodalu",
+          "text": "చిత్తం అత్తయ్య గారు, నేను ఇక్కడే కూర్చుని వివరిస్తాను.",
+          "action": "sit",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఇప్పుడే లేచి మాయా పొయ్యి వైపు తిరుగుతాను.",
+          "action": "stand",
+          "camera": "speaker"
+        },
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు, ఇటు చూడండి, పొయ్యి సిద్ధంగా ఉంది.",
+          "action": "turn",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఇదిగో మాయా పొయ్యిని తీసుకుని వేడి అన్నం వండుతాను!",
+          "action": "carry",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "నేను ఇప్పుడే వంట పూర్తిచేసి వస్తాను అత్తయ్య గారు!",
+          "action": "walk_out_left",
+          "camera": "follow_exit"
+        }
+      ]
+    }
+  ]
+}

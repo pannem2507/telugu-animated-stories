@@ -1,0 +1,65 @@
+{
+  "title": "ఫేజ్ 8 మోషన్ మరియు రియల్ లిప్-సింక్ సమగ్ర ధృవీకరణ (Phase 8 Final Motion & Real Lip-Sync Validation)",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "background": "village_kitchen",
+      "dialogues": [
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు, వచ్చాను!",
+          "action": "walk_in_left",
+          "camera": "follow_walk"
+        },
+        {
+          "character": "atha",
+          "text": "శాంతంగా ఉండు.",
+          "action": "idle",
+          "camera": "speaker"
+        },
+        {
+          "character": "atha",
+          "text": "ఆకలితో ఉన్నాను!",
+          "action": "scold",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "kodalu",
+          "text": "ముందుకు వస్తున్నాను.",
+          "action": "walk_right",
+          "camera": "follow_walk"
+        },
+        {
+          "character": "kodalu",
+          "text": "కూర్చుంటాను.",
+          "action": "sit",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "లేచి నిలబడతాను.",
+          "action": "stand",
+          "camera": "speaker"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఇటు తిరుగుతాను.",
+          "action": "turn",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "పొయ్యి మోస్తున్నాను!",
+          "action": "carry",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "వెళ్ళివస్తాను!",
+          "action": "walk_out_left",
+          "camera": "follow_exit"
+        }
+      ]
+    }
+  ]
+}

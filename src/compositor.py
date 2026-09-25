@@ -30,26 +30,15 @@ from .scene_director import SceneDirector
 from .environment_engine import EnvironmentEngine
 from .performance_director import PerformanceDirector, ListenerReactionController, ObjectManager, AudioPerformanceAnalyzer, PerformanceTimeline
 
-ASSETS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets"))
+from .project_config import load_project_config
+_proj_config = load_project_config()
 
-CHARACTER_ALIASES = {
-    "saroja": "kanthamma",
-    "padma": "padma",
-    "sudhakar": "gent",
-    "ramesh": "gent",
-    "husband": "gent",
-    "son": "gent",
-    "prasad": "father_in_law",
-    "mamagaru": "father_in_law",
-    "harish": "kid",
-    "kid_boy": "kid",
-    "bhavya": "kid",
-    "sharada": "atha",
-    "anamika": "kodalu",
-    "maharshi": "maharshi",
-    "neighbor": "kanthamma",
-    "neighbor_man": "gent"
-}
+# CHARACTER_ALIASES are now loaded from the project configuration (ProjectConfig)
+CHARACTER_ALIASES = _proj_config.character_aliases
+
+# Assets directory resolved from project configuration
+ASSETS_DIR = str(_proj_config.resolve_path("assets"))
+
 
 class AssetCache:
     """Preloads and caches character puppet parts, props, and backgrounds."""
@@ -59,9 +48,11 @@ class AssetCache:
         self.props = {}
         
     def get_background(self, name: str, width: int = 1920, height: int = 1080) -> Image.Image:
-        if not name.endswith(".png"):
-            name = name + ".png"
-        path = os.path.join(ASSETS_DIR, "backgrounds", name)
+        env_map = _proj_config.environments
+        base_name = name[:-4] if name.endswith(".png") else name
+        resolved = env_map.get(base_name, env_map.get(name, base_name))
+        filename = resolved if resolved.endswith(".png") else f"{resolved}.png"
+        path = os.path.join(ASSETS_DIR, "backgrounds", filename)
         if not os.path.exists(path):
             path = os.path.join(ASSETS_DIR, "backgrounds", "village_winter_porch.png")
             if not os.path.exists(path):
@@ -127,19 +118,21 @@ def build_character_sprite(parts: dict, mouth_cue: str, is_blinking: bool, flip_
     )
 
 def overlay_subtitles(img: Image.Image, speaker: str, text: str):
-    """Draws a clean, modern subtitle banner at the bottom with native Telugu typography."""
+    """Draw a clean subtitle banner at the bottom with native Telugu typography.
+    Colours are loaded from ProjectConfig.subtitles.
+    """
     w, h = img.size
     draw = ImageDraw.Draw(img)
-    
+
     banner_h = 130
     banner_y = h - banner_h - 40
     box = [(120, banner_y), (w - 120, banner_y + banner_h)]
-    
+
     overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
     o_draw = ImageDraw.Draw(overlay)
     o_draw.rounded_rectangle(box, radius=20, fill=(15, 15, 20, 205), outline=(220, 180, 50, 230), width=3)
     img.alpha_composite(overlay)
-    
+
     try:
         font_speaker = ImageFont.truetype("C:/Windows/Fonts/Nirmala.ttc", 30)
         font_text = ImageFont.truetype("C:/Windows/Fonts/Nirmala.ttc", 36)
@@ -150,30 +143,10 @@ def overlay_subtitles(img: Image.Image, speaker: str, text: str):
         except Exception:
             font_speaker = ImageFont.load_default()
             font_text = ImageFont.load_default()
-        
+
     speaker_tag = speaker.upper()
-    color_map = {
-        "ATHA": (255, 120, 120),
-        "SHARADA": (255, 120, 120),
-        "KODALU": (120, 220, 255),
-        "ANAMIKA": (120, 220, 255),
-        "NARRATOR": (255, 230, 100),
-        "HUSBAND": (140, 240, 140),
-        "GENT": (140, 240, 140),
-        "RAMESH": (140, 240, 140),
-        "SON": (140, 240, 140),
-        "KANTHAMMA": (255, 150, 60),
-        "SAROJA": (255, 150, 60),
-        "PADMA": (255, 170, 90),
-        "SUDHAKAR": (160, 220, 160),
-        "MAHARSHI": (255, 190, 80),
-        "FATHER_IN_LAW": (220, 180, 255),
-        "PRASAD": (220, 180, 255),
-        "MAMAGARU": (220, 180, 255),
-        "KID": (255, 180, 220),
-        "HARISH": (180, 220, 255),
-        "BHAVYA": (255, 180, 220)
-    }
+    color_map = _proj_config.subtitles
+    color_map = {k: tuple(v) for k, v in color_map.items()}
     tag_color = color_map.get(speaker_tag, (240, 240, 240))
     draw.text((160, banner_y + 15), speaker_tag, font=font_speaker, fill=tag_color)
     draw.text((160, banner_y + 60), text, font=font_text, fill=(255, 255, 255))
@@ -208,11 +181,12 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
     combined_audio = AudioSegment.empty()
     
     total_scenes = len(script_data["scenes"])
-    print(f"[Render] Starting video production for '{script_data.get('title', 'Telugu Story')}' ({total_scenes} scenes)")
+    print(f"[Render] Starting video production for '{script_data.get('title', 'Telugu Story')}' ({total_scenes} scenes)", flush=True)
     
     global_frame = 0
     
     for s_idx, scene in enumerate(script_data["scenes"]):
+        camera.reset()
         bg_name = scene.get("background", "village_winter_porch")
         dialogues = scene.get("dialogues", [])
         
@@ -230,19 +204,21 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
         if "kitchen" in bg_name:
             if "magic_stove" in obj_manager.objects:
                 st = obj_manager.objects["magic_stove"]
+                ms_cfg = _proj_config.magic_stove
                 st["is_held"] = False
                 st["held_by"] = None
-                st["x"] = 320
-                st["y"] = 560
+                st["x"] = ms_cfg["anchor"][0]
+                st["y"] = ms_cfg["anchor"][1]
                 st["visible"] = True
-                st["alpha"] = 1.0
+                st["alpha"] = ms_cfg.get("glow_intensity", 1.0)
         elif "porch" in bg_name and s_idx > 0:
             if "magic_stove" in obj_manager.objects:
                 st = obj_manager.objects["magic_stove"]
+                ms_cfg = _proj_config.magic_stove
                 st["is_held"] = True
                 st["held_by"] = "kodalu"
                 st["visible"] = False
-                st["alpha"] = 1.0
+                st["alpha"] = ms_cfg.get("glow_intensity", 1.0)
 
         actors = director.setup_scene(scene)
         
@@ -262,7 +238,7 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
             combined_audio += pause_audio
             
             # 2. Extract Lip-Sync Cues & Audio Stress Envelope
-            cues = extract_lipsync_cues(wav_path, fps=fps)
+            cues = extract_lipsync_cues(wav_path, fps=fps, text=text)
             pause_frames = int(0.35 * fps)
             cues.extend(["mouth_closed"] * pause_frames)
             total_turn_frames = len(cues)
@@ -289,7 +265,7 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
             walk_orient = turn_plan["walk_orientation"]
             camera_shot = perf_plan["camera_shot"]
             
-            print(f"   -> Turn {d_idx + 1}: {speaker.upper()} [{perf_type}] (shot: {camera_shot}, {duration_s:.2f}s, {total_turn_frames} frames)")
+            print(f"   -> Turn {d_idx + 1}: {speaker.upper()} [{perf_type}] (shot: {camera_shot}, {duration_s:.2f}s, {total_turn_frames} frames)", flush=True)
             
             # Configure Camera target for this turn
             stove_obj = obj_manager.objects.get("magic_stove")
@@ -303,7 +279,13 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
                 two_pos = None
             
             if camera_shot in ["medium_character", "speaker_medium", "speaker", "kodalu_medium", "maharshi_medium"]:
-                target_char = "kodalu" if "kodalu" in camera_shot else ("maharshi" if "maharshi" in camera_shot else speaker)
+                target_char = None
+                for c_name in actors:
+                    if c_name in camera_shot:
+                        target_char = c_name
+                        break
+                if not target_char:
+                    target_char = speaker
                 if target_char in actors:
                     camera.set_shot("medium_character", target_pos=(actors[target_char]["x"], actors[target_char]["y"]))
                 else:
@@ -311,13 +293,23 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
             elif camera_shot in ["medium_two_shot", "two_shot", "wide_two_shot"]:
                 camera.set_shot(camera_shot, two_shot_targets=two_pos)
             elif camera_shot in ["speaker_closeup", "closeup", "kodalu_closeup", "maharshi_closeup"]:
-                target_char = "kodalu" if "kodalu" in camera_shot else ("maharshi" if "maharshi" in camera_shot else speaker)
+                target_char = None
+                for c_name in actors:
+                    if c_name in camera_shot:
+                        target_char = c_name
+                        break
+                if not target_char:
+                    target_char = speaker
                 if target_char in actors:
                     camera.set_shot("speaker_closeup", target_pos=(actors[target_char]["x"], actors[target_char]["y"]))
                 else:
                     camera.set_shot("wide")
             elif camera_shot in ["reaction_closeup", "maharshi_reaction", "kodalu_reaction"]:
-                target_char = "maharshi" if "maharshi" in camera_shot else ("kodalu" if "kodalu" in camera_shot else None)
+                target_char = None
+                for c_name in actors:
+                    if c_name in camera_shot:
+                        target_char = c_name
+                        break
                 if not target_char:
                     listeners = [c for c in actors if c != speaker]
                     target_char = listeners[0] if listeners else speaker
@@ -326,17 +318,22 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
                 else:
                     camera.set_shot("wide")
             elif camera_shot in ["insert_object", "object_insert"]:
-                camera.set_shot("insert_object", object_pos=(stove_obj["x"] + 150, stove_obj["y"] + 100))
+                target_p = stove_obj or (next(iter(obj_manager.objects.values())) if obj_manager.objects else None)
+                obj_pos = (target_p["x"] + 150, target_p["y"] + 100) if target_p else None
+                camera.set_shot("insert_object", object_pos=obj_pos)
             elif camera_shot in ["magic_wide"]:
                 camera.set_shot("magic_wide")
             elif camera_shot in ["follow_walk", "follow_exit"] and is_walking and walk_actor in actors:
-                camera.set_shot("follow_walk", target_pos=(actors[walk_actor]["x"], actors[walk_actor]["y"]))
+                camera.set_shot("follow_walk", target_pos=(start_x, actors[walk_actor]["y"]))
             else:
                 camera.set_shot("wide")
+
+            if d_idx == 0:
+                camera.snap_to_target()
                 
             # Check for turn-level magic sparkle / steam effect
             turn_effects = list(scene_effects)
-            if ("magic" in action or "మాయా" in text or "magic" in perf_type or camera_shot == "magic_wide") and "magic" not in turn_effects:
+            if ("magic" in action or "à°®à°¾à°¯à°¾" in text or "magic" in perf_type or camera_shot == "magic_wide") and "magic" not in turn_effects:
                 turn_effects.append("magic")
             if ("cook" in action or "stir" in action) and "steam" not in turn_effects:
                 turn_effects.append("steam")
@@ -370,7 +367,7 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
                     if not actor.get("is_present", True):
                         continue
                     if ch_name not in idle_controllers:
-                        idle_controllers[ch_name] = IdleController(seed=len(idle_controllers))
+                        idle_controllers[ch_name] = IdleController(seed=len(idle_controllers), char_id=ch_name)
                         
                     parts = cache.get_character_parts(ch_name)
                     is_speaker = (ch_name == speaker)
@@ -378,55 +375,198 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
                     
                     walk_state = None
                     gesture_state = None
+                    list_info = {}
                     idle_state = idle_controllers[ch_name].evaluate(global_frame)
                     
                     cur_x = actor["x"]
                     cur_y = actor["y"]
                     cur_orient = actor["orientation"]
                     actor_scale = actor.get("scale", 1.0)
+                    cur_emotion = "neutral"
+                    cur_intensity = 0.5
+                    cur_tear_state = "none"
+                    cur_tear_progress = 0.0
+                    cur_gesture = "idle"
+                    cur_chest_sink = 0.0
                     
                     if is_walking and ch_name == walk_actor:
                         if f_idx < walk_frames:
                             prog = f_idx / float(walk_frames)
-                            smooth_prog = 3.0 * (prog ** 2) - 2.0 * (prog ** 3)
-                            cur_x = int(start_x + (target_x - start_x) * smooth_prog)
-                            walk_state = walk_engine.evaluate(f_idx, walk_type=walk_type, total_walk_frames=walk_frames)
+                            is_exit_walk = (target_x >= 1900 or target_x <= -500)
+                            if is_exit_walk:
+                                # Exit acceleration: full walking momentum into off-screen exit
+                                exit_prog = prog ** 1.2
+                                cur_x = int(start_x + (target_x - start_x) * exit_prog)
+                            else:
+                                smooth_prog = 3.0 * (prog ** 2) - 2.0 * (prog ** 3)
+                                cur_x = int(start_x + (target_x - start_x) * smooth_prog)
+                            actor["x"] = cur_x
+
+                            # Check if character has walked completely off-screen during exit
+                            if (target_x >= 1920 and cur_x >= 1920) or (target_x <= -500 and cur_x <= -500):
+                                actor["is_present"] = False
+                                continue
+
+                            travel_dist = abs(target_x - start_x)
+                            walk_state = walk_engine.evaluate(f_idx, walk_type=walk_type, total_walk_frames=walk_frames, char_id=walk_actor, travel_distance=travel_dist)
                             cur_orient = walk_orient
+                            cur_emotion = perf_plan.get("emotion", "neutral") if is_speaker else "neutral"
+                            cur_intensity = 0.6 if is_speaker else 0.5
+                            cur_tear_state = "none"
+                            cur_tear_progress = 0.0
+                            is_carrying = any(p.get("is_held") and p.get("held_by") == ch_name for p in obj_manager.objects.values()) or "carry" in action
+                            cur_gesture = "carry" if is_carrying else "walk"
+                            cur_chest_sink = 0.0
+
+                            # If character is speaking while in transit, articulate speech nods and head movement
+                            if is_speaker:
+                                raw_transit_g = perf_director.evaluate_acting_frame(
+                                    "speaking", f_idx, total_turn_frames, is_speaker=True,
+                                    audio_stress=a_stress, is_strike_beat=is_strike,
+                                    char_id=walk_actor
+                                )
+                                # During locomotion transit, arms maintain carry posture if holding prop, or resting swing
+                                gesture_state = dict(raw_transit_g)
+                                if is_carrying:
+                                    gesture_state["left_arm_rot"] = 24.0
+                                    gesture_state["right_arm_rot"] = -24.0
+                                else:
+                                    gesture_state["left_arm_rot"] = 0.0
+                                    gesture_state["right_arm_rot"] = 0.0
+                            elif is_carrying:
+                                gesture_state = {
+                                    "left_arm_rot": 24.0,
+                                    "right_arm_rot": -24.0,
+                                    "head_rot": 0.0,
+                                    "bob_y": 0.0,
+                                    "torso_roll": 0.0,
+                                    "scale_x": 1.0,
+                                    "scale_y": 1.0
+                                }
+
                             if camera_shot in ["follow_walk", "follow_exit"]:
-                                camera.target_cx = cur_x + 300.0
+                                crop_w = int(width / camera.target_zoom)
+                                min_cam_x = crop_w / 2.0
+                                max_cam_x = width - (crop_w / 2.0)
+                                
+                                # Dynamic tracking of walking actor across valid camera bounds
+                                actor_cx = cur_x + 300.0
+                                other_actors_x = [a["x"] + 300.0 for c, a in actors.items() if c != walk_actor and a.get("is_present", True)]
+                                if other_actors_x and camera_shot == "follow_walk":
+                                    group_cx = (actor_cx + other_actors_x[0]) / 2.0
+                                    t_w = f_idx / float(max(1, walk_frames))
+                                    smooth_t = 3.0 * (t_w ** 2) - 2.0 * (t_w ** 3)
+                                    desired_cx = actor_cx * (1.0 - smooth_t * 0.5) + group_cx * (smooth_t * 0.5)
+                                else:
+                                    desired_cx = actor_cx
+                                camera.target_cx = max(min_cam_x, min(max_cam_x, desired_cx))
+                                camera.target_cy = cur_y + (walk_state["y_bob"] if walk_state else 0.0) * 0.4 + 270.0
                         else:
                             cur_x = target_x
                             actor["x"] = target_x
-                            if target_x <= -500 or target_x >= 1950:
+                            if target_x <= -500 or target_x >= 1920:
                                 actor["is_present"] = False
                                 continue
-                            cur_orient = actor["orientation"]
-                            gesture_state = perf_director.evaluate_acting_frame(perf_type if is_speaker else "listen", f_idx, total_turn_frames, is_speaker)
+                            actor["orientation"] = walk_orient
+                            cur_orient = walk_orient
+                            # Smooth post-walk settling transition (decay leftover stride bobbing over 10 frames)
+                            settle_idx = f_idx - walk_frames
+                            if settle_idx < 10:
+                                settle_decay = 1.0 - (settle_idx / 10.0)
+                                ws = walk_engine.evaluate(walk_frames, walk_type=walk_type, total_walk_frames=walk_frames, char_id=walk_actor, travel_distance=abs(target_x - start_x))
+                                if ws:
+                                    walk_state = {k: (v if k in ["scale_mod", "phase", "dampen"] else v * settle_decay) if isinstance(v, (int, float)) else v for k, v in ws.items()}
                             
-                        cur_emotion = "neutral"
-                        cur_intensity = 0.5
-                        cur_tear_state = "none"
-                        cur_tear_progress = 0.0
-                        cur_gesture = "idle"
-                        cur_chest_sink = 0.0
+                            # Resume active speaker emotional expression & gestures post-walk
+                            if is_speaker:
+                                cur_emotion = perf_plan["emotion"]
+                                cur_intensity = perf_eval["emotion_intensity"]
+                                cur_tear_state = perf_eval["tear_state"]
+                                cur_tear_progress = perf_eval["tear_progress"]
+                                cur_gesture = perf_eval["gesture"] if perf_eval.get("gesture", "idle") not in ["idle", "walk", "walk_in_right", "walk_in_left", "walk_out_right", "walk_out_left"] else "speaking"
+                                cur_chest_sink = perf_eval["chest_sink"]
+                                raw_g = perf_director.evaluate_acting_frame(
+                                    cur_gesture, f_idx, total_turn_frames, is_speaker=True,
+                                    audio_stress=a_stress, is_strike_beat=is_strike,
+                                    char_id=ch_name
+                                )
+                                if settle_idx < 10:
+                                    # Smooth cross-fade from walk settling to conversational speaking gesture
+                                    t_blend = settle_idx / 10.0
+                                    smooth_blend = 3.0 * (t_blend ** 2) - 2.0 * (t_blend ** 3)
+                                    gesture_state = {
+                                        k: (v * smooth_blend) if isinstance(v, (int, float)) else v
+                                        for k, v in raw_g.items()
+                                    }
+                                else:
+                                    gesture_state = raw_g
+                            else:
+                                speaker_actor = actors.get(speaker)
+                                speaker_coords = (speaker_actor["x"], speaker_actor["y"]) if speaker_actor else None
+                                listener_coords = (cur_x, cur_y)
+                                speaker_emotion = perf_plan.get("emotion", d.get("emotion", "neutral"))
+                                list_info = perf_director.listener_controller.evaluate_listener(
+                                    listener_id=ch_name,
+                                    speaker_id=speaker,
+                                    emotion=speaker_emotion,
+                                    frame_idx=f_idx,
+                                    total_frames=total_turn_frames,
+                                    listener_pos=listener_coords,
+                                    speaker_pos=speaker_coords,
+                                    speaker_audio_stress=a_stress
+                                )
+                                cur_x += int(list_info["x_offset"])
+                                actor_scale = actor.get("scale", 1.0) * list_info["scale_mod"]
+                                cur_emotion = list_info["face_emotion"]
+                                cur_intensity = list_info["fear_intensity"] if cur_emotion == "cower" else list_info["empathy_intensity"]
+                                cur_tear_state = "none"
+                                cur_tear_progress = 0.0
+                                cur_gesture = "idle"
+                                cur_chest_sink = 0.0
+                                
+                                gesture_state = {
+                                    "head_rot": list_info["head_rot"],
+                                    "left_arm_rot": list_info.get("left_arm_rot", 0.0),
+                                    "right_arm_rot": list_info.get("right_arm_rot", 0.0),
+                                    "jitter_x": list_info.get("jitter_x", 0.0),
+                                    "jitter_y": list_info.get("jitter_y", 0.0),
+                                    "bob_y": list_info["sway_y"],
+                                    "torso_roll": list_info.get("torso_roll", 0.0),
+                                    "scale_x": 1.0,
+                                    "scale_y": 1.0
+                                }
                         
                     elif is_speaker:
-                        gesture_state = perf_director.evaluate_acting_frame(perf_type, f_idx, total_turn_frames, is_speaker=True)
+                        gesture_state = perf_director.evaluate_acting_frame(
+                            perf_type, f_idx, total_turn_frames, is_speaker=True,
+                            audio_stress=a_stress, is_strike_beat=is_strike,
+                            char_id=ch_name
+                        )
                         cur_emotion = perf_plan["emotion"]
                         cur_intensity = perf_eval["emotion_intensity"]
                         cur_tear_state = perf_eval["tear_state"]
                         cur_tear_progress = perf_eval["tear_progress"]
-                        cur_gesture = perf_eval["gesture"]
+                        cur_gesture = perf_eval["gesture"] if perf_eval.get("gesture", "idle") != "idle" else (perf_type or action)
                         cur_chest_sink = perf_eval["chest_sink"]
+                        if perf_type in ["turn", "turn_around", "turn_left", "turn_right"] or action in ["turn", "turn_around", "turn_left", "turn_right"]:
+                            if f_idx >= int(total_turn_frames * 0.45):
+                                if "left" in (perf_type or action):
+                                    cur_orient = "3/4_left"
+                                elif "right" in (perf_type or action):
+                                    cur_orient = "3/4_right"
+                                else:
+                                    cur_orient = "3/4_left" if "right" in actor.get("orientation", "3/4_right") else "3/4_right"
+                                actor["orientation"] = cur_orient
                     else:
-                        # Listener dynamic performance with reaction latency
+                        # Listener dynamic performance with reaction latency responding to active speaker emotion
                         speaker_actor = actors.get(speaker)
                         speaker_coords = (speaker_actor["x"], speaker_actor["y"]) if speaker_actor else None
                         listener_coords = (actor["x"], actor["y"])
+                        speaker_emotion = perf_plan.get("emotion", d.get("emotion", "neutral"))
                         list_info = perf_director.listener_controller.evaluate_listener(
                             listener_id=ch_name,
                             speaker_id=speaker,
-                            emotion=d.get("emotion", "neutral"),
+                            emotion=speaker_emotion,
                             frame_idx=f_idx,
                             total_frames=total_turn_frames,
                             listener_pos=listener_coords,
@@ -444,12 +584,12 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
                         
                         gesture_state = {
                             "head_rot": list_info["head_rot"],
-                            "left_arm_rot": 0.0,
-                            "right_arm_rot": 0.0,
-                            "jitter_x": 0.0,
-                            "jitter_y": 0.0,
+                            "left_arm_rot": list_info.get("left_arm_rot", 0.0),
+                            "right_arm_rot": list_info.get("right_arm_rot", 0.0),
+                            "jitter_x": list_info.get("jitter_x", 0.0),
+                            "jitter_y": list_info.get("jitter_y", 0.0),
                             "bob_y": list_info["sway_y"],
-                            "torso_roll": 0.0,
+                            "torso_roll": list_info.get("torso_roll", 0.0),
                             "scale_x": 1.0,
                             "scale_y": 1.0
                         }
@@ -476,13 +616,35 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
                         scale=actor_scale
                     )
                     
+                    # Calculate physical offsets for sprite screen placement from walking, tremor, and idle
+                    char_offset_x = 0
+                    char_offset_y = 0
+
+                    if walk_state:
+                        char_offset_y += int(walk_state.get("y_bob", 0.0))
+                        char_offset_x += int(walk_state.get("settle_shift_x", 0.0))
+                    if gesture_state:
+                        char_offset_y += int(gesture_state.get("bob_y", 0.0))
+                    elif idle_state and not walk_state:
+                        char_offset_y += int(idle_state.get("sway_y", 0.0))
+
+                    if gesture_state:
+                        char_offset_x += int(gesture_state.get("jitter_x", 0.0))
+                        char_offset_y += int(gesture_state.get("jitter_y", 0.0))
+                    elif idle_state and not walk_state:
+                        char_offset_x += int(idle_state.get("sway_x", 0.0))
+
+                    render_x = cur_x + char_offset_x
+                    render_y = cur_y + char_offset_y
+
                     # Draw soft ambient ground contact shadow
                     shadow_y = cur_y + 860
-                    shadow_x = cur_x + 300
+                    shadow_x = cur_x + 300 + char_offset_x
                     shadow_w = 140
                     shadow_h = 24
-                    if walk_state:
-                        shadow_w = int(140 + walk_state["y_bob"] * 1.5)
+                    total_bob = (walk_state.get("y_bob", 0.0) if walk_state else 0.0) + (gesture_state.get("bob_y", 0.0) if gesture_state else 0.0)
+                    if abs(total_bob) > 0.1:
+                        shadow_w = int(140 + total_bob * 1.5)
                     s_overlay = Image.new("RGBA", (width, height), (0, 0, 0, 0))
                     s_draw = ImageDraw.Draw(s_overlay)
                     s_draw.ellipse([(shadow_x - shadow_w//2, shadow_y - shadow_h//2),
@@ -490,53 +652,24 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
                                    fill=(20, 20, 25, 60))
                     bg_frame.alpha_composite(s_overlay)
                     
-                    # Composite character sprite
-                    bg_frame.alpha_composite(sprite, dest=(cur_x, cur_y))
+                    # Composite character sprite at physical render coordinates
+                    bg_frame.alpha_composite(sprite, dest=(render_x, render_y))
                     
                     # Update held object position
-                    if stove_obj.get("is_held") and stove_obj.get("held_by") == ch_name:
-                        obj_manager.update_held_position("magic_stove", cur_x, cur_y, walk_state["y_bob"] if walk_state else 0, orientation=cur_orient, scale=actor_scale)
-                        stove_obj["visible"] = True
+                    for p_id, p_obj in obj_manager.objects.items():
+                        if p_obj.get("is_held") and p_obj.get("held_by") == ch_name:
+                            obj_manager.update_held_position(p_id, render_x, render_y, walk_state["y_bob"] if walk_state else 0, orientation=cur_orient, scale=actor_scale)
+                            p_obj["visible"] = True
                         
-                # 5. Render Interactive Props (Magic Stove)
-                holder = stove_obj.get("held_by")
-                is_held_absent = stove_obj.get("is_held") and holder and (holder not in actors or not actors[holder].get("is_present", True))
-                if not is_held_absent and stove_obj.get("visible", False) and stove_obj.get("alpha", 0.0) > 0.05:
-                    stove_img = cache.get_prop("magic_stove.png")
-                    if stove_img:
-                        s_alpha = stove_obj["alpha"]
-                        s_x, s_y = stove_obj["x"], stove_obj["y"]
-                        glow_intensity = stove_obj.get("glow_intensity", 0.0)
-                        
-                        # Divine glowing halo behind stove
-                        if glow_intensity > 0.05:
-                            glow_overlay = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-                            g_draw = ImageDraw.Draw(glow_overlay)
-                            halo_radius = int(180 * glow_intensity + math.sin(global_frame * 0.2) * 15)
-                            g_cx, g_cy = s_x + 150, s_y + 120
-                            # Multi-ring golden halo
-                            for r_step, alpha_step in [(halo_radius, 40), (int(halo_radius * 0.7), 80), (int(halo_radius * 0.4), 140)]:
-                                g_draw.ellipse([(g_cx - r_step, g_cy - r_step), (g_cx + r_step, g_cy + r_step)],
-                                               fill=(255, 215, 60, int(alpha_step * min(1.0, glow_intensity))))
-                            bg_frame.alpha_composite(glow_overlay)
-                            
-                        # Ground contact shadow for resting stove
-                        if not stove_obj.get("is_held"):
-                            st_shadow = Image.new("RGBA", (width, height), (0, 0, 0, 0))
-                            st_draw = ImageDraw.Draw(st_shadow)
-                            st_draw.ellipse([(s_x + 60, s_y + 190), (s_x + 240, s_y + 225)], fill=(20, 20, 25, int(70 * s_alpha)))
-                            bg_frame.alpha_composite(st_shadow)
-                            
-                        # Alpha blend stove sprite
-                        if s_alpha < 0.98:
-                            st_copy = stove_img.copy()
-                            np_st = np.array(st_copy)
-                            np_st[:, :, 3] = (np_st[:, :, 3] * s_alpha).astype(np.uint8)
-                            st_rendered = Image.fromarray(np_st, mode="RGBA")
-                        else:
-                            st_rendered = stove_img
-                            
-                        bg_frame.alpha_composite(st_rendered, dest=(s_x, s_y))
+                # 5. Render Interactive Props (Generic Prop Engine)
+                for p_id, p_obj in obj_manager.objects.items():
+                    holder = p_obj.get("held_by")
+                    is_held_absent = p_obj.get("is_held") and holder and (holder not in actors or not actors[holder].get("is_present", True))
+                    if not is_held_absent and p_obj.get("visible", False) and p_obj.get("alpha", 0.0) > 0.05:
+                        prop_asset = p_obj.get("asset_name", f"{p_id}.png")
+                        p_img = cache.get_prop(prop_asset)
+                        if p_img:
+                            obj_manager.render_prop(p_id, bg_frame, p_img, global_frame)
                         
                 # 6. Render Environmental Effects (Snow, Steam, Magic Sparkles)
                 env_engine.render(bg_frame, global_frame, turn_effects)
@@ -562,7 +695,7 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
                 global_frame += 1
                 
             # If this turn was an exit, mark actor as not present for subsequent turns
-            if action in ["exit_left", "walk_out_left", "exit_right", "walk_out_right", "exit", "walk_out"]:
+            if action in ["exit_left", "walk_out_left", "exit_right", "walk_out_right", "exit", "walk_out"] or director.behavior_registry.is_exit_action(action):
                 if walk_actor and walk_actor in actors:
                     actors[walk_actor]["is_present"] = False
                 
@@ -591,7 +724,7 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
     output_mp4 = os.path.abspath(output_mp4)
     os.makedirs(os.path.dirname(output_mp4), exist_ok=True)
     
-    print(f"[Render] Muxing video and audio with FFmpeg into: {output_mp4}")
+    print(f"[Render] Muxing video and audio with FFmpeg into: {output_mp4}", flush=True)
     ffmpeg_cmd = [
         "ffmpeg",
         "-y",
@@ -605,5 +738,29 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
         output_mp4
     ]
     subprocess.run(ffmpeg_cmd, check=True)
-    print(f"[Render] SUCCESS! Video generated at: {output_mp4}")
+    print(f"[Render] SUCCESS! Video generated at: {output_mp4}", flush=True)
     return output_mp4
+
+
+def inspect_frame_state(frame_idx: int, actors: dict, current_shot: str,
+                        camera_target: tuple, cues: dict = None) -> dict:
+    """
+    Lightweight diagnostic snapshot for inspecting animation, actor positioning,
+    mouth states, and camera tracking without noisy stdout output.
+    """
+    snapshot = {
+        "frame_idx": frame_idx,
+        "shot": current_shot,
+        "camera_target": camera_target,
+        "actors": {}
+    }
+    for name, a in actors.items():
+        snapshot["actors"][name] = {
+            "x": a.get("x", 0),
+            "y": a.get("y", 0),
+            "is_present": a.get("is_present", True),
+            "orientation": a.get("orientation", "3/4_right"),
+            "action": a.get("action", "idle")
+        }
+    return snapshot
+

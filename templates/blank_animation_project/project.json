@@ -1,5 +1,10 @@
 {
   "$schema": "../../docs/project_schema.md",
+  "project": {
+    "name": "Blank Animation Project Template",
+    "version": "0.1",
+    "schema_version": 1
+  },
   "title": "Blank Animation Project Template",
   "language": "en-US",
   "resolution": {
@@ -7,6 +12,16 @@
     "height": 1080
   },
   "fps": 24,
+  "paths": {
+    "assets": "assets",
+    "characters": "characters",
+    "props": "props",
+    "environments": "environments",
+    "scenes": "scenes",
+    "audio": "audio",
+    "subtitles": "subtitles",
+    "voices": "voices"
+  },
   "bgm": {
     "track": "audio/ambient_theme.wav",
     "volume_db": -22.0

@@ -1,0 +1,8 @@
+{
+  "environments": {
+    "village_winter_porch": "village_winter_porch.png",
+    "village_kitchen": "village_kitchen.png",
+    "porch": "porch.png",
+    "default": "village_winter_porch.png"
+  }
+}

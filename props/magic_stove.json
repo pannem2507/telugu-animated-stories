@@ -1,0 +1,37 @@
+{
+  "id": "magic_stove",
+  "name": "Clay Magic Chulha",
+  "asset": "magic_stove.png",
+  "scale": 1.0,
+  "anchor": [320, 560],
+  "glow_intensity": 1.0,
+  "attachment_points": {
+    "waist_carry": {
+      "offset_x_right": 185,
+      "offset_x_left": 100,
+      "offset_y": 245
+    },
+    "table_rest": {
+      "offset_x": 0,
+      "offset_y": 0
+    }
+  },
+  "effects": {
+    "glow": {
+      "enabled": true,
+      "color": [255, 215, 60],
+      "max_radius": 180,
+      "rings": [
+        { "radius_multiplier": 1.0, "alpha": 40 },
+        { "radius_multiplier": 0.7, "alpha": 80 },
+        { "radius_multiplier": 0.4, "alpha": 140 }
+      ]
+    },
+    "shadow": {
+      "enabled": true,
+      "width": 140,
+      "height": 24,
+      "offset_y": 140
+    }
+  }
+}

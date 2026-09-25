@@ -25,10 +25,47 @@ MOUTH_OPEN_O = "mouth_open_o"
 MOUTH_TEETH  = "mouth_teeth"
 MOUTH_WIDE   = "mouth_wide"
 
-def extract_lipsync_cues(wav_path: str, fps: int = 24) -> list:
+def extract_telugu_phonemes(text: str) -> list:
+    """
+    Parses Telugu text into frame-distributable mouth viseme cues.
+    Maps vowels, matras, labials, and sibilants to viseme names.
+    """
+    if not text:
+        return []
+        
+    phonemes = []
+    # Telugu Unicode ranges: \u0C00 - \u0C7F
+    for ch in text:
+        # 1. Open vowels / broad Aa
+        if ch in ['అ', 'ఆ', '\u0c3e', 'హ', 'ా']:
+            phonemes.append(MOUTH_OPEN_A)
+        # 2. Spread vowels / Ee / E
+        elif ch in ['ఇ', 'ఈ', '\u0c3f', '\u0c40', 'ఎ', 'ఏ', 'ఐ', '\u0c46', '\u0c47', '\u0c48', 'య', 'ి', 'ీ', 'ె', 'ే', 'ై']:
+            phonemes.append(MOUTH_OPEN_E)
+        # 3. Rounded vowels / Oo / U
+        elif ch in ['ఉ', 'ఊ', '\u0c41', '\u0c42', 'ఒ', 'ఓ', 'ఔ', '\u0c4a', '\u0c4b', '\u0c4c', 'ు', 'ూ', 'ొ', 'ో', 'ౌ']:
+            phonemes.append(MOUTH_OPEN_O)
+        # 4. Labials (lips close)
+        elif ch in ['ప', 'ఫ', 'బ', 'భ', 'మ', '\u0c02', 'ం']:
+            phonemes.append(MOUTH_CLOSED)
+        # 5. Sibilants / Dentals (teeth visible)
+        elif ch in ['స', 'ష', 'శ', 'త', 'థ', 'ద', 'ధ', 'చ', 'జ', 'స్', 'త్']:
+            phonemes.append(MOUTH_TEETH)
+        # 6. Spaces / punctuation
+        elif ch in [' ', ',', '.', '!', '?', '\n']:
+            phonemes.append(MOUTH_CLOSED)
+        else:
+            # Consonants with implicit vowel 'a'
+            if '\u0c15' <= ch <= '\u0c39':
+                phonemes.append(MOUTH_OPEN_A)
+                
+    return phonemes
+
+def extract_lipsync_cues(wav_path: str, fps: int = 24, text: str = "") -> list:
     """
     Analyzes the audio file and returns a list of mouth shape names,
     one for each video frame from 0 to total_frames - 1.
+    If dialogue text is provided, aligns Telugu phonemes to voiced audio frames.
     """
     with wave.open(wav_path, 'rb') as wf:
         n_channels = wf.getnchannels()
@@ -93,35 +130,76 @@ def extract_lipsync_cues(wav_path: str, fps: int = 24) -> list:
     silence_thresh = max(0.02, np.percentile(energies, 20) * 1.2)
     loud_thresh = np.percentile(energies, 85)
     
-    raw_cues = []
-    for i in range(total_video_frames):
-        e = energies[i]
-        z = zcrs[i]
-        
-        if e < silence_thresh:
-            raw_cues.append(MOUTH_CLOSED)
-        elif e > loud_thresh and loud_thresh > silence_thresh:
-            raw_cues.append(MOUTH_WIDE)
-        elif z > 0.22:
-            # High sibilant / consonant friction
-            raw_cues.append(MOUTH_TEETH)
-        else:
-            # Vowels: alternate based on energy and modulation to create natural speaking rhythm
-            cycle = (i % 6)
-            if cycle in [0, 1]:
-                raw_cues.append(MOUTH_OPEN_A)
-            elif cycle in [2, 3]:
-                raw_cues.append(MOUTH_OPEN_E)
+    telugu_phonemes = extract_telugu_phonemes(text)
+    
+    # Find all voiced frames (speech activity)
+    voiced_indices = [idx for idx, e in enumerate(energies) if e >= silence_thresh]
+    
+    raw_cues = [MOUTH_CLOSED] * total_video_frames
+    
+    if telugu_phonemes and voiced_indices:
+        # Distribute Telugu phonemes proportionally across voiced speech frames
+        num_voiced = len(voiced_indices)
+        num_ph = len(telugu_phonemes)
+        for rank, v_idx in enumerate(voiced_indices):
+            e = energies[v_idx]
+            z = zcrs[v_idx]
+            if e > loud_thresh and loud_thresh > silence_thresh * 1.5:
+                raw_cues[v_idx] = MOUTH_WIDE
+            elif z > 0.26:
+                raw_cues[v_idx] = MOUTH_TEETH
             else:
-                raw_cues.append(MOUTH_OPEN_O)
-                
-    # Smoothing filter: prevent single-frame flickering
-    # Enforce minimum phoneme hold of 2 frames
+                ph_idx = min(num_ph - 1, int((rank / float(num_voiced)) * num_ph))
+                ph = telugu_phonemes[ph_idx]
+                raw_cues[v_idx] = ph
+    else:
+        for i in range(total_video_frames):
+            e = energies[i]
+            z = zcrs[i]
+            
+            if e < silence_thresh:
+                raw_cues[i] = MOUTH_CLOSED
+            elif e > loud_thresh and loud_thresh > silence_thresh:
+                raw_cues[i] = MOUTH_WIDE
+            elif z > 0.22:
+                raw_cues[i] = MOUTH_TEETH
+            else:
+                cycle = (i % 6)
+                if cycle in [0, 1]:
+                    raw_cues[i] = MOUTH_OPEN_A
+                elif cycle in [2, 3]:
+                    raw_cues[i] = MOUTH_OPEN_E
+                else:
+                    raw_cues[i] = MOUTH_OPEN_O
+                    
+    # Smoothing filter: enforce stable 2-3 frame viseme holds (Adobe Animate lip-sync principle)
+    # Prevents single-frame flickering/chatter while ensuring resting closed lips during silence
     smoothed_cues = list(raw_cues)
-    for i in range(1, len(smoothed_cues) - 1):
+    n_c = len(smoothed_cues)
+    
+    # Pass 1: Eliminate isolated 1-frame spikes (except silence)
+    for i in range(1, n_c - 1):
         if smoothed_cues[i] != smoothed_cues[i-1] and smoothed_cues[i] != smoothed_cues[i+1]:
-            # Single-frame blip, match previous
-            smoothed_cues[i] = smoothed_cues[i-1]
+            if smoothed_cues[i-1] != MOUTH_CLOSED:
+                smoothed_cues[i] = smoothed_cues[i-1]
+            elif smoothed_cues[i+1] != MOUTH_CLOSED:
+                smoothed_cues[i] = smoothed_cues[i+1]
+            else:
+                smoothed_cues[i] = MOUTH_CLOSED
+                
+    # Pass 2: Quantize short voiced runs to at least 2 frames
+    i = 0
+    while i < n_c:
+        if smoothed_cues[i] != MOUTH_CLOSED:
+            run_start = i
+            while i < n_c and smoothed_cues[i] != MOUTH_CLOSED:
+                i += 1
+            run_len = i - run_start
+            if run_len == 1 and i < n_c:
+                smoothed_cues[i] = smoothed_cues[run_start]
+                i += 1
+        else:
+            i += 1
             
     return smoothed_cues
 

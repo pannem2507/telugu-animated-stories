@@ -1,0 +1,77 @@
+{
+  "title": "దృశ్య చలన మరియు లిప్-సింక్ తుది ధృవీకరణ (Phase 7.2 Final Motion & Lip-Sync Validation)",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "background": "village_kitchen",
+      "dialogues": [
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు! వంటింట్లో ఏదైనా వేడిగా వండమంటారా?",
+          "action": "walk_in_left",
+          "camera": "follow_walk"
+        },
+        {
+          "character": "atha",
+          "text": "ఆకలితో ప్రాణం పోతోంది! వెంటనే వేడి అన్నం వండు!",
+          "action": "scold",
+          "camera": "speaker"
+        },
+        {
+          "character": "kodalu",
+          "text": "నన్ను క్షమించండి అత్తయ్య గారు, ఆలస్యమైనందుకు బాధగా ఉంది.",
+          "action": "sad",
+          "camera": "speaker"
+        },
+        {
+          "character": "kodalu",
+          "text": "నేను ఇక్కడే కూర్చుని పొయ్యిని సిద్ధం చేస్తాను.",
+          "action": "sit",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఇప్పుడే లేచి పైనున్న పాత్రను అందుకుంటాను.",
+          "action": "stand",
+          "camera": "speaker"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఇదిగో అటక పైనున్న పాత్రను తీసుకుంటున్నాను.",
+          "action": "reach",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు, ఇటు చూడండి, పొయ్యి సిద్ధంగా ఉంది.",
+          "action": "turn",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "బాబోయ్! పొయ్యిలో అద్భుతమైన మాయా కాంతులు వస్తున్నాయి!",
+          "action": "surprise",
+          "camera": "two_shot"
+        },
+        {
+          "character": "atha",
+          "text": "శభాష్ కోడలా! చాలా సంతోషంగా ఉంది, వేగంగా వండు!",
+          "action": "happy",
+          "camera": "speaker"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఇదిగో మాయా పొయ్యిని తీసుకుని వేడి అన్నం వండుతాను!",
+          "action": "carry",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "నేను ఇప్పుడే వంట పూర్తిచేసి వస్తాను అత్తయ్య గారు!",
+          "action": "walk_out_left",
+          "camera": "follow_exit"
+        }
+      ]
+    }
+  ]
+}

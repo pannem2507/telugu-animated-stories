@@ -1,0 +1,47 @@
+{
+  "title": "మోషన్ మరియు నటన నాణ్యత ధృవీకరణ (Phase 7 Motion & Acting Validation)",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "background": "village_kitchen",
+      "dialogues": [
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్య గారు! వంటింట్లో ఏదైనా వేడిగా వండమంటారా?",
+          "action": "walk_in_left",
+          "camera": "follow_walk"
+        },
+        {
+          "character": "atha",
+          "text": "ఆకలితో ప్రాణం పోతోంది! వెంటనే వేడి అన్నం వండు!",
+          "action": "scold",
+          "camera": "speaker"
+        },
+        {
+          "character": "kodalu",
+          "text": "చిత్తం అత్తయ్య గారు, నేను ఇక్కడే కూర్చుంటాను.",
+          "action": "sit",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఇప్పుడే లేచి సిద్ధమవుతాను అత్తయ్య గారు.",
+          "action": "stand",
+          "camera": "speaker"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఇదిగో మాయా పొయ్యిని తీసుకుని వేడి అన్నం వండుతాను!",
+          "action": "carry",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "నేను ఇప్పుడే వంట పూర్తిచేసి వస్తాను అత్తయ్య గారు!",
+          "action": "walk_out_left",
+          "camera": "follow_exit"
+        }
+      ]
+    }
+  ]
+}

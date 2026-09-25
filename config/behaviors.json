@@ -1,0 +1,307 @@
+{
+  "behaviors": {
+    "walk_in_left": {
+      "type": "movement",
+      "start_x": -650,
+      "target_mode": "actor_x",
+      "walk_type": "walk_right",
+      "orientation": "3/4_right",
+      "duration_s": 4.0,
+      "set_present": true
+    },
+    "enter_left": {
+      "type": "movement",
+      "start_x": -650,
+      "target_mode": "actor_x",
+      "walk_type": "walk_right",
+      "orientation": "3/4_right",
+      "duration_s": 4.0,
+      "set_present": true
+    },
+    "walk_in": {
+      "type": "movement",
+      "start_x": -650,
+      "target_mode": "actor_x",
+      "walk_type": "walk_right",
+      "orientation": "3/4_right",
+      "duration_s": 4.0,
+      "set_present": true
+    },
+    "walk_in_right": {
+      "type": "movement",
+      "start_x": 1760,
+      "target_mode": "actor_x",
+      "walk_type": "walk_left",
+      "orientation": "3/4_left",
+      "duration_s": 4.5,
+      "set_present": true
+    },
+    "enter_right": {
+      "type": "movement",
+      "start_x": 1760,
+      "target_mode": "actor_x",
+      "walk_type": "walk_left",
+      "orientation": "3/4_left",
+      "duration_s": 4.5,
+      "set_present": true
+    },
+    "exit_left": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_x": -620,
+      "walk_type": "walk_left",
+      "orientation": "3/4_left",
+      "duration_s": 3.5
+    },
+    "walk_out_left": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_x": -620,
+      "walk_type": "walk_left",
+      "orientation": "3/4_left",
+      "duration_s": 3.5
+    },
+    "exit_right": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_x": 1960,
+      "walk_type": "walk_right",
+      "orientation": "3/4_right",
+      "duration_s": 3.5
+    },
+    "walk_out_right": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_x": 1960,
+      "walk_type": "walk_right",
+      "orientation": "3/4_right",
+      "duration_s": 3.5
+    },
+    "exit": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_x": 2100,
+      "walk_type": "walk_right",
+      "orientation": "3/4_right",
+      "duration_s": 3.5
+    },
+    "walk_out": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_x": 2100,
+      "walk_type": "walk_right",
+      "orientation": "3/4_right",
+      "duration_s": 3.5
+    },
+    "walk_to_target": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_mode": "named_target",
+      "duration_s": 2.0
+    },
+    "walk_towards": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_mode": "named_target",
+      "duration_s": 2.0
+    },
+    "walk_toward_camera": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_mode": "actor_x",
+      "walk_type": "walk_toward_camera",
+      "orientation": "front",
+      "duration_s": 1.8
+    },
+    "enter": {
+      "type": "movement",
+      "start_x": -650,
+      "target_mode": "actor_x",
+      "walk_type": "walk_right",
+      "orientation": "3/4_right",
+      "duration_s": 4.0,
+      "set_present": true
+    },
+    "walk_right": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_mode": "relative",
+      "delta_x": 320,
+      "walk_type": "walk_right",
+      "orientation": "3/4_right",
+      "duration_s": 2.5
+    },
+    "walk_lr": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_mode": "relative",
+      "delta_x": 320,
+      "walk_type": "walk_right",
+      "orientation": "3/4_right",
+      "duration_s": 2.5
+    },
+    "walk_left": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_mode": "relative",
+      "delta_x": -320,
+      "walk_type": "walk_left",
+      "orientation": "3/4_left",
+      "duration_s": 2.5
+    },
+    "walk_rl": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_mode": "relative",
+      "delta_x": -320,
+      "walk_type": "walk_left",
+      "orientation": "3/4_left",
+      "duration_s": 2.5
+    },
+    "walk": {
+      "type": "movement",
+      "start_mode": "actor_x",
+      "target_mode": "relative",
+      "delta_x": 300,
+      "walk_type": "walk_right",
+      "orientation": "3/4_right",
+      "duration_s": 2.5
+    },
+    "idle": {
+      "type": "action",
+      "performance": "idle"
+    },
+    "react": {
+      "type": "action",
+      "performance": "surprise"
+    },
+    "reaction": {
+      "type": "action",
+      "performance": "surprise"
+    },
+    "cook": {
+      "type": "action",
+      "performance": "cook",
+      "prop_trigger": "magic_stove"
+    },
+    "pickup_sequence": {
+      "type": "action",
+      "performance": "pickup_sequence",
+      "prop_trigger": "magic_stove"
+    },
+    "speaking": {
+      "type": "speech",
+      "performance": "talk"
+    },
+    "talk": {
+      "type": "speech",
+      "performance": "talk"
+    },
+    "scold": {
+      "type": "speech",
+      "performance": "angry"
+    },
+    "pray": {
+      "type": "action",
+      "performance": "pray_sequence"
+    },
+    "meditate": {
+      "type": "action",
+      "performance": "pray_sequence"
+    },
+    "warm_hands": {
+      "type": "action",
+      "performance": "cook_sequence",
+      "prop_trigger": "magic_stove"
+    },
+    "shiver": {
+      "type": "action",
+      "performance": "shiver"
+    },
+    "knock_door": {
+      "type": "action",
+      "performance": "knock_sequence"
+    },
+    "carry": {
+      "type": "action",
+      "performance": "carry",
+      "prop_trigger": "magic_stove"
+    },
+    "eat": {
+      "type": "action",
+      "performance": "standard_timeline"
+    },
+    "cry": {
+      "type": "speech",
+      "performance": "cry_sequence"
+    },
+    "narrate": {
+      "type": "speech",
+      "performance": "narrate"
+    },
+    "question": {
+      "type": "speech",
+      "performance": "talk"
+    },
+    "answer_polite": {
+      "type": "speech",
+      "performance": "talk"
+    },
+    "angry_curious": {
+      "type": "speech",
+      "performance": "angry"
+    },
+    "smile": {
+      "type": "speech",
+      "performance": "happy"
+    },
+    "bossy": {
+      "type": "speech",
+      "performance": "angry"
+    },
+    "laugh": {
+      "type": "speech",
+      "performance": "happy"
+    },
+    "gesture": {
+      "type": "action",
+      "performance": "talk"
+    },
+    "reveal_object": {
+      "type": "action",
+      "prop_trigger": "magic_stove"
+    },
+    "sit": {
+      "type": "action",
+      "performance": "sit"
+    },
+    "stand": {
+      "type": "action",
+      "performance": "stand"
+    },
+    "turn": {
+      "type": "action",
+      "performance": "turn"
+    },
+    "reach": {
+      "type": "action",
+      "performance": "reach"
+    },
+    "happy": {
+      "type": "speech",
+      "performance": "happy"
+    },
+    "sad": {
+      "type": "speech",
+      "performance": "sad"
+    },
+    "surprise": {
+      "type": "speech",
+      "performance": "surprise"
+    },
+    "surprised": {
+      "type": "speech",
+      "performance": "surprise"
+    }
+  }
+}

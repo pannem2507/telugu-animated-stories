@@ -1,0 +1,29 @@
+{
+  "shots": {
+    "establishing_wide": { "zoom": 1.0, "target_mode": "fixed", "center_ratio_x": 0.5, "center_ratio_y": 0.5 },
+    "wide": { "zoom": 1.0, "target_mode": "fixed", "center_ratio_x": 0.5, "center_ratio_y": 0.5 },
+    "static": { "zoom": 1.0, "target_mode": "fixed", "center_ratio_x": 0.5, "center_ratio_y": 0.5 },
+    "wide_two_shot": { "zoom": 1.08, "target_mode": "two_shot", "offset_x": 300.0, "offset_y": 260.0 },
+    "medium_two_shot": { "zoom": 1.15, "target_mode": "two_shot", "offset_x": 300.0, "offset_y": 260.0 },
+    "two_shot": { "zoom": 1.15, "target_mode": "two_shot", "offset_x": 300.0, "offset_y": 260.0 },
+    "medium_character": { "zoom": 1.25, "target_mode": "single_target", "offset_x": 300.0, "offset_y": 260.0 },
+    "speaker_medium": { "zoom": 1.25, "target_mode": "single_target", "offset_x": 300.0, "offset_y": 260.0 },
+    "speaker": { "zoom": 1.25, "target_mode": "single_target", "offset_x": 300.0, "offset_y": 260.0 },
+    "kodalu_medium": { "zoom": 1.25, "target_mode": "single_target", "offset_x": 300.0, "offset_y": 260.0 },
+    "maharshi_medium": { "zoom": 1.25, "target_mode": "single_target", "offset_x": 300.0, "offset_y": 260.0 },
+    "speaker_closeup": { "zoom": 1.85, "target_mode": "single_target", "offset_x": 280.0, "offset_y": 150.0 },
+    "closeup": { "zoom": 1.85, "target_mode": "single_target", "offset_x": 280.0, "offset_y": 150.0 },
+    "kodalu_closeup": { "zoom": 1.85, "target_mode": "single_target", "offset_x": 280.0, "offset_y": 150.0 },
+    "maharshi_closeup": { "zoom": 1.85, "target_mode": "single_target", "offset_x": 280.0, "offset_y": 150.0 },
+    "reaction_closeup": { "zoom": 1.85, "target_mode": "single_target", "offset_x": 280.0, "offset_y": 150.0 },
+    "maharshi_reaction": { "zoom": 1.85, "target_mode": "single_target", "offset_x": 280.0, "offset_y": 150.0 },
+    "kodalu_reaction": { "zoom": 1.85, "target_mode": "single_target", "offset_x": 280.0, "offset_y": 150.0 },
+    "insert_object": { "zoom": 1.38, "target_mode": "object", "center_ratio_x": 0.5, "center_ratio_y": 0.65 },
+    "object_insert": { "zoom": 1.38, "target_mode": "object", "center_ratio_x": 0.5, "center_ratio_y": 0.65 },
+    "magic_wide": { "zoom": 1.10, "target_mode": "fixed", "center_ratio_x": 0.5, "center_ratio_y": 0.52 },
+    "follow_walk": { "zoom": 1.18, "target_mode": "walk", "offset_x": 300.0, "offset_y": 280.0 },
+    "follow_exit": { "zoom": 1.18, "target_mode": "walk", "offset_x": 300.0, "offset_y": 280.0 },
+    "over_shoulder_left": { "zoom": 1.28, "target_mode": "over_shoulder_left", "offset_x": 250.0, "offset_y": 240.0 },
+    "over_shoulder_right": { "zoom": 1.28, "target_mode": "over_shoulder_right", "offset_x": 350.0, "offset_y": 240.0 }
+  }
+}

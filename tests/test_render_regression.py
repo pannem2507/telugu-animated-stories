@@ -47,7 +47,8 @@ class BaselineRenderRegressionTest(unittest.TestCase):
         for scene in self.screenplay.get("scenes", []):
             bg = scene.get("background")
             if bg:
-                bg_path = Path(ASSETS_DIR) / "backgrounds" / bg
+                bg_file = bg if bg.endswith(".png") else f"{bg}.png"
+                bg_path = Path(ASSETS_DIR) / "backgrounds" / bg_file
                 self.assertTrue(bg_path.is_file(), f"Background asset missing: {bg_path}")
         # Example prop asset check (magic stove)
         prop_path = Path(ASSETS_DIR) / "props" / "magic_stove.png"

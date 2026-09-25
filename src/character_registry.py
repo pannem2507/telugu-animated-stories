@@ -161,16 +161,25 @@ class CharacterRegistry:
             return self.DEFAULT_ARM_CONFIGS["gent"]
         return self.DEFAULT_ARM_CONFIGS["kodalu"]
 
+    @classmethod
+    def get_base_orientation_static(cls, char_id: str) -> str:
+        cid = char_id.lower() if char_id else "kodalu"
+        if "kodalu" in cid or "anamika" in cid:
+            return "3/4_left"
+        return cls.DEFAULT_BASE_ORIENTATIONS.get(cid, "3/4_right")
+
     def get_base_orientation(self, char_id: str) -> str:
         cid = char_id.lower() if char_id else "kodalu"
-        if cid in self.loaded_characters and "base_orientation" in self.loaded_characters[cid]:
+        if hasattr(self, "loaded_characters") and cid in self.loaded_characters and "base_orientation" in self.loaded_characters[cid]:
             return self.loaded_characters[cid]["base_orientation"]
-        return self.DEFAULT_BASE_ORIENTATIONS.get(cid, "3/4_right")
+        return self.get_base_orientation_static(char_id)
 
-    def should_flip(self, char_id: str, target_orientation: str) -> bool:
-        base_orient = self.get_base_orientation(char_id)
+    @classmethod
+    def should_flip(cls, char_id: str, target_orientation: str) -> bool:
+        base_orient = cls.get_base_orientation_static(char_id)
         if "left" in target_orientation:
             return base_orient != "3/4_left"
         elif "right" in target_orientation:
             return base_orient != "3/4_right"
         return False
+

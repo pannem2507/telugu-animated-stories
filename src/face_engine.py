@@ -191,10 +191,10 @@ class FacePerformanceEngine:
     }
     
     @classmethod
-    def get_landmarks(cls, char_id: str) -> dict:
+    def resolve_char_id(cls, char_id: str) -> str:
         cid = char_id.lower() if char_id else "kodalu"
         if cid in cls.LANDMARKS:
-            return cls.LANDMARKS[cid]
+            return cid
         alias_map = {
             "saroja": "kanthamma",
             "padma": "kanthamma",
@@ -214,24 +214,29 @@ class FacePerformanceEngine:
         }
         mapped = alias_map.get(cid)
         if mapped and mapped in cls.LANDMARKS:
-            return cls.LANDMARKS[mapped]
+            return mapped
         if "padma" in cid:
-            return cls.LANDMARKS["kanthamma"]
-        if "atha" in cid:
-            return cls.LANDMARKS["atha"]
+            return "kanthamma"
+        if "atha" in cid or "sharada" in cid:
+            return "atha"
         if "gent" in cid or "sudhakar" in cid or "ramesh" in cid:
-            return cls.LANDMARKS["gent"]
+            return "gent"
         if "kanthamma" in cid or "saroja" in cid:
-            return cls.LANDMARKS["kanthamma"]
+            return "kanthamma"
         if "kid" in cid:
-            return cls.LANDMARKS["kid"]
+            return "kid"
         if "father" in cid or "mamagaru" in cid:
-            return cls.LANDMARKS["father_in_law"]
+            return "father_in_law"
         if "maharshi" in cid:
-            return cls.LANDMARKS["maharshi"]
-        return cls.LANDMARKS["kodalu"]
+            return "maharshi"
+        return "kodalu"
+
+    @classmethod
+    def get_landmarks(cls, char_id: str) -> dict:
+        cid = cls.resolve_char_id(char_id)
+        return cls.LANDMARKS.get(cid, cls.LANDMARKS["kodalu"])
     
-    def __init__(self, max_displacement: float = 7.0):
+    def __init__(self, max_displacement: float = 14.0):
         self.max_displacement = max_displacement
         
     def _build_safety_lock_mask(self, char_id: str, shape: tuple) -> np.ndarray:
@@ -248,19 +253,20 @@ class FacePerformanceEngine:
                     "brow_r_inner", "brow_r_peak", "brow_r_outer"]:
             pt = lm.get(key)
             if pt:
-                cv2.circle(mask, pt, 30, 1.0, -1)
+                cv2.circle(mask, pt, 32, 1.0, -1)
                 
         # 2. Allow upper eyelid regions (soft radius 18px)
         for key in ["eye_l", "eye_r"]:
             pt = lm.get(key)
             if pt:
-                cv2.circle(mask, (pt[0], pt[1] - 4), 18, 0.85, -1)
+                cv2.circle(mask, (pt[0], pt[1] - 4), 20, 0.85, -1)
                 
-        # 3. Allow mouth corners and lips (radius 22px)
+        # 3. Allow mouth corners and lips with generous jaw depression zone (36px + downward chin expansion)
         for key in ["mouth_l", "mouth_c", "mouth_r"]:
             pt = lm.get(key)
             if pt:
-                cv2.circle(mask, pt, 22, 0.90, -1)
+                cv2.circle(mask, pt, 36, 1.0, -1)
+                cv2.circle(mask, (pt[0], pt[1] + 12), 26, 1.0, -1)
                 
         # 4. Feather the allowed mask smoothly
         mask = cv2.GaussianBlur(mask, (25, 25), 0)
@@ -291,17 +297,19 @@ class FacePerformanceEngine:
         No full-head warping. Locks hair, glasses, bindi, ears.
         Seamlessly transforms base smiling mouth into authentic sorrow/fear expression.
         """
-        if intensity <= 0.02 and emotion not in ["cry", "weep", "sad", "cower", "fear", "crying", "intense_crying"]:
+        if intensity <= 0.02 and emotion not in ["cry", "weep", "sad", "cower", "fear", "crying", "intense_crying"] and (not mouth_cue or mouth_cue == "mouth_closed"):
             return base_img
             
-        lm = self.get_landmarks(char_id)
+        cid = self.resolve_char_id(char_id)
+        lm = self.get_landmarks(cid)
             
         working_img = base_img.copy()
         
-        # 1. SPECIAL ARTICULATION: Seamless Sorrow / Fear Mouth Replacement for Kodalu
+        # 1. SPECIAL ARTICULATION: Seamless Sorrow / Fear Mouth Replacement for Kodalu (and aliases)
         # When Kodalu (who has an open smiling mouth in base art) experiences sorrow or fear,
         # replace the smiling cavity with a feathered skin blend and draw a downturned sorrow lip seam.
-        if char_id == "kodalu" and emotion in ["sad", "cry", "weep", "cower", "fear", "crying", "intense_crying"] and intensity > 0.08:
+        is_kodalu_crying = (cid == "kodalu" and emotion in ["sad", "cry", "weep", "cower", "fear", "crying", "intense_crying"] and intensity > 0.08)
+        if is_kodalu_crying:
             arr_base = np.array(working_img)
             chin_skin = np.median(arr_base[186:192, 260:280, :3], axis=(0, 1)).astype(np.uint8)
             
@@ -329,6 +337,14 @@ class FacePerformanceEngine:
             pout_pts = [(p[0], p[1] + 2.5 + speech_open) for p in points[6:22]]
             c_draw.line(pout_pts, fill=(140, 55, 55, int(170 * intensity)), width=2)
             
+        mc = lm.get("mouth_c", (270, 175))
+        ml = lm.get("mouth_l", (245, 175))
+        mr = lm.get("mouth_r", (295, 175))
+        v_stress = max(0.0, min(1.0, audio_stress))
+
+        # Open visemes are cleanly articulated via multi-axis radial pull mesh deformation below
+        # Preserves base illustration fidelity without artificial brown stickers or smudges
+
         img_np = np.array(working_img)
         h, w, c = img_np.shape
         
@@ -408,45 +424,46 @@ class FacePerformanceEngine:
                 apply_radial_pull(lm["mouth_l"][0], lm["mouth_l"][1], 18, 0.0, 1.5 * eff_intensity)
                 apply_radial_pull(lm["mouth_r"][0], lm["mouth_r"][1], 18, 0.0, 1.5 * eff_intensity)
 
-        # 7. SPEECH VISUAL ARTICULATION & VISEMES (Telugu phoneme shapes A, O, E, teeth)
-        mc = lm.get("mouth_c", (270, 175))
-        ml = lm.get("mouth_l", (245, 175))
-        mr = lm.get("mouth_r", (295, 175))
-        v_stress = max(0.0, min(1.0, audio_stress))
-        
-        # When not already handling Kodalu crying mouth patch
-        is_kodalu_crying = (char_id == "kodalu" and emotion in ["sad", "cry", "weep", "cower", "fear", "crying", "intense_crying"] and intensity > 0.08)
+        # 7. SHIVER / COLD TREMOR (High-frequency jaw quiver, tense mouth, pinched brow)
+        elif emotion in ["shiver", "cold"]:
+            shiver_jitter = math.sin(frame_idx * 3.5) * 2.5 * eff_intensity
+            apply_radial_pull(lm["brow_l_inner"][0], lm["brow_l_inner"][1], 28, 0.0, -3.5 * eff_intensity)
+            apply_radial_pull(lm["brow_r_inner"][0], lm["brow_r_inner"][1], 28, 0.0, -3.5 * eff_intensity)
+            apply_radial_pull(lm["mouth_c"][0], lm["mouth_c"][1] + 6, 20, 0.0, shiver_jitter)
+            apply_radial_pull(lm["mouth_l"][0], lm["mouth_l"][1], 18, 0.0, shiver_jitter * 0.7)
+            apply_radial_pull(lm["mouth_r"][0], lm["mouth_r"][1], 18, 0.0, shiver_jitter * 0.7)
+
+        # 8. SPEECH VISUAL ARTICULATION & VISEMES (Telugu phoneme shapes A, O, E, teeth, wide)
         if not is_kodalu_crying:
-            if mouth_cue == "mouth_open_a":
-                # Broad open vowel (Ah / Aa): pull lower lip down, slight upper lift
-                open_depth = 4.5 + v_stress * 3.5
-                apply_radial_pull(mc[0], mc[1] + 10, 18, 0.0, -open_depth)
-                apply_radial_pull(mc[0], mc[1] - 4, 16, 0.0, open_depth * 0.35)
-            elif mouth_cue == "mouth_open_o":
-                # Pursed round vowel (Oh / Oo): lateral compression inward, vertical round opening
-                pull_in = 3.0 + v_stress * 2.0
+            m_cue_str = str(mouth_cue).lower().strip() if mouth_cue else "mouth_closed"
+            if m_cue_str in ["mouth_open_a", "open_a", "a"]:
+                # Broad open vowel (Ah / Aa): gentle jaw depression below mouth cavity
+                open_depth = 4.5 + v_stress * 2.5
+                apply_radial_pull(mc[0], mc[1] + 16, 26, 0.0, open_depth)
+            elif m_cue_str in ["mouth_wide", "wide"]:
+                # Emphatic shout / stress peak: jaw depression and slight cheek expansion
+                open_depth = 6.5 + v_stress * 3.5
+                apply_radial_pull(mc[0], mc[1] + 18, 28, 0.0, open_depth)
+                apply_radial_pull(ml[0], ml[1], 22, -2.5, 0.0)
+                apply_radial_pull(mr[0], mr[1], 22, 2.5, 0.0)
+            elif m_cue_str in ["mouth_open_o", "open_o", "mouth_open_u", "open_u", "o", "u"]:
+                # Pursed round vowel (Oh / Oo): moderate chin depression
                 round_depth = 3.5 + v_stress * 2.0
-                apply_radial_pull(ml[0], ml[1], 16, pull_in, 0.0)
-                apply_radial_pull(mr[0], mr[1], 16, -pull_in, 0.0)
-                apply_radial_pull(mc[0], mc[1] + 8, 16, 0.0, -round_depth)
-            elif mouth_cue in ["mouth_open_e", "mouth_wide"]:
-                # Stretched wide vowel (Ee / Eh): pull mouth corners outward, moderate vertical separation
-                pull_out = 3.8 + v_stress * 2.2
-                open_e = 2.5 + v_stress * 1.8
-                apply_radial_pull(ml[0], ml[1], 16, -pull_out, 0.0)
-                apply_radial_pull(mr[0], mr[1], 16, pull_out, 0.0)
-                apply_radial_pull(mc[0], mc[1] + 6, 16, 0.0, -open_e)
-            elif mouth_cue == "mouth_teeth":
-                # Sibilants / dental consonants: wide lateral stretch, tight vertical opening
-                pull_out = 3.0 + v_stress * 1.5
-                apply_radial_pull(ml[0], ml[1], 16, -pull_out, 0.0)
-                apply_radial_pull(mr[0], mr[1], 16, pull_out, 0.0)
-                apply_radial_pull(mc[0], mc[1] + 5, 14, 0.0, -1.8)
-            elif v_stress > 0.08 and char_id != "kodalu":
+                apply_radial_pull(mc[0], mc[1] + 14, 24, 0.0, round_depth)
+            elif m_cue_str in ["mouth_open_e", "open_e", "mouth_open_i", "open_i", "e", "i"]:
+                # Stretched wide vowel (Ee / Eh): gentle jaw drop
+                open_e = 2.5 + v_stress * 1.5
+                apply_radial_pull(mc[0], mc[1] + 12, 24, 0.0, open_e)
+            elif m_cue_str in ["mouth_teeth", "teeth"]:
+                # Sibilants / dental consonants: very subtle jaw anchor
+                apply_radial_pull(mc[0], mc[1] + 8, 20, 0.0, 1.5)
+            elif m_cue_str in ["mouth_closed", "closed", "rest", "mouth_rest"]:
+                # Silence / resting mouth: no active speech deformation
+                pass
+            elif v_stress > 0.12:
                 # Fallback audio stress opening
-                speech_open = min(5.0, v_stress * 5.5)
-                apply_radial_pull(mc[0], mc[1] + 8, 16, 0.0, -speech_open)
-                apply_radial_pull(mc[0], mc[1] - 4, 16, 0.0, speech_open * 0.4)
+                speech_open = min(4.0, v_stress * 4.0)
+                apply_radial_pull(mc[0], mc[1] + 14, 22, 0.0, speech_open)
 
         # Safety mask lock
         dx *= safety_mask
@@ -455,7 +472,7 @@ class FacePerformanceEngine:
         map_x = grid_x + dx
         map_y = grid_y + dy
         warped_np = cv2.remap(img_np, map_x, map_y, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-        warped_img = Image.fromarray(warped_np, mode="RGBA")
+        warped_img = Image.fromarray(warped_np)
         
         return warped_img
 
@@ -472,7 +489,7 @@ class FacePerformanceEngine:
         if intensity <= 0.05 or tear_state == "none":
             return canvas
             
-        lm = self.LANDMARKS.get(char_id, self.LANDMARKS["kodalu"])
+        lm = self.get_landmarks(char_id)
         w, h = canvas.size
         overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         draw = ImageDraw.Draw(overlay)
@@ -525,3 +542,6 @@ class FacePerformanceEngine:
                         
         canvas.alpha_composite(overlay)
         return canvas
+
+# Backwards compatibility alias for deformation test suite
+FaceDeformationEngine = FacePerformanceEngine
