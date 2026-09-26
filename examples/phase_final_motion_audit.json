@@ -1,0 +1,88 @@
+{
+  "title": "ఫైనల్ మోషన్ ఆడిట్ - సమగ్ర 2D యానిమేషన్ పరీక్ష (Final Motion Audit - Comprehensive 2D Animation Validation)",
+  "scenes": [
+    {
+      "scene_id": 1,
+      "background": "village_kitchen",
+      "dialogues": [
+        {
+          "character": "kodalu",
+          "text": "అత్తయ్యగారూ, నేను వచ్చాను!",
+          "action": "walk_in_left",
+          "emotion": "neutral",
+          "camera": "follow_walk"
+        },
+        {
+          "character": "kodalu",
+          "text": "చలి చాలా ఎక్కువగా ఉంది, అత్తయ్యగారూ.",
+          "action": "speaking",
+          "emotion": "sad",
+          "camera": "speaker_medium"
+        },
+        {
+          "character": "atha",
+          "text": "ఎందుకు ఆలస్యం చేశావు? వెంటనే పొయ్యి వెలిగించు!",
+          "action": "scold",
+          "emotion": "angry",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "kodalu",
+          "text": "అలాగే అత్తయ్యగారూ.",
+          "action": "idle",
+          "emotion": "neutral",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "నేను ఇటు తిరిగి చూస్తున్నాను.",
+          "action": "turn",
+          "emotion": "neutral",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "అక్కడ ఉన్న మాయా పొయ్యి దగ్గరకు వెళుతున్నాను.",
+          "action": "walk_rl",
+          "emotion": "neutral",
+          "camera": "follow_walk"
+        },
+        {
+          "character": "kodalu",
+          "text": "ఇదిగో మాయా పొయ్యిని చేతుల్లోకి తీసుకున్నాను.",
+          "action": "carry",
+          "emotion": "neutral",
+          "camera": "two_shot"
+        },
+        {
+          "character": "kodalu",
+          "text": "నేను ఇక్కడ కింద కూర్చుని పొయ్యి వెలిగిస్తాను.",
+          "action": "sit",
+          "emotion": "neutral",
+          "camera": "speaker"
+        },
+        {
+          "character": "atha",
+          "text": "చాలా మంచిది కోడలా, ఇల్లు వెచ్చగా మారింది!",
+          "action": "speaking",
+          "emotion": "happy",
+          "camera": "speaker_closeup"
+        },
+        {
+          "character": "kodalu",
+          "text": "హమ్మయ్యా! ఎంత హాయిగా ఉంది!",
+          "action": "stand",
+          "emotion": "joy",
+          "camera": "speaker"
+        },
+        {
+          "character": "kodalu",
+          "text": "నేను వెంటనే వెళ్లి ఆహారం తెస్తాను!",
+          "action": "walk_out_right",
+          "emotion": "happy",
+          "camera": "follow_exit"
+        }
+      ]
+    }
+  ]
+}
