@@ -1,0 +1,91 @@
+{
+  "kodalu": {
+    "canvas_size": [600, 900],
+    "anchors": {
+      "neck_pivot": [300, 260],
+      "hip_pivot": [300, 520],
+      "shoulder_l": [225, 285],
+      "shoulder_r": [365, 290],
+      "ground_pivot": [300, 870]
+    },
+    "layers": {
+      "torso_head": {
+        "file": "torso_head_clean.png",
+        "parent": null,
+        "pivot": [300, 520],
+        "z_index": 10,
+        "description": "Head, neck, chest, and upper saree drape down to hip seam (y≈520)"
+      },
+      "lower_body_saree": {
+        "file": "lower_body_saree.png",
+        "parent": "torso_head",
+        "pivot": [300, 520],
+        "deformation_type": "shear_wave",
+        "z_index": 8,
+        "description": "Full lower saree drape from hip seam down to hem; driven by shear deformation, not rigid rotation"
+      },
+      "foot_l": {
+        "file": "foot_l.png",
+        "parent": "lower_body_saree",
+        "pivot": [225, 860],
+        "drive": "left_foot_lift",
+        "z_index": 6,
+        "description": "Left foot positioned at hem, driven by left_foot_lift from WalkCycleController"
+      },
+      "foot_r": {
+        "file": "foot_r.png",
+        "parent": "lower_body_saree",
+        "pivot": [330, 860],
+        "drive": "right_foot_lift",
+        "z_index": 7,
+        "description": "Right foot positioned at hem, driven by right_foot_lift from WalkCycleController"
+      },
+      "upper_arm_l": {
+        "file": "upper_arm_l.png",
+        "parent": "torso_head",
+        "pivot": [225, 285],
+        "length": 105.0,
+        "z_index": 5,
+        "description": "Left upper arm with yellow blouse sleeve down to elbow joint"
+      },
+      "forearm_l": {
+        "file": "forearm_l.png",
+        "parent": "upper_arm_l",
+        "pivot": [210, 390],
+        "length": 95.0,
+        "z_index": 6,
+        "description": "Left forearm segment with skin and gold bangles"
+      },
+      "hand_l": {
+        "file": "hand_l.png",
+        "parent": "forearm_l",
+        "pivot": [210, 485],
+        "z_index": 7,
+        "description": "Left hand sprite in relaxed/gesture-capable pose"
+      },
+      "upper_arm_r": {
+        "file": "upper_arm_r.png",
+        "parent": "torso_head",
+        "pivot": [365, 290],
+        "length": 105.0,
+        "z_index": 15,
+        "description": "Right upper arm with yellow blouse sleeve down to elbow joint"
+      },
+      "forearm_r": {
+        "file": "forearm_r.png",
+        "parent": "upper_arm_r",
+        "pivot": [370, 395],
+        "length": 95.0,
+        "z_index": 16,
+        "description": "Right forearm segment with skin and gold bangles"
+      },
+      "hand_r": {
+        "file": "hand_r.png",
+        "parent": "forearm_r",
+        "pivot": [370, 490],
+        "z_index": 17,
+        "description": "Right hand sprite in relaxed/gesture-capable pose"
+      }
+    }
+  }
+}
