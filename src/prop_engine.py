@@ -75,7 +75,7 @@ class GenericPropManager:
             "attachment_type": "waist_carry",
             "visible": False,
             "attachment_offsets": att_offsets or {
-                "waist_carry": {"right": (185, 245), "left": (100, 245)}
+                "waist_carry": {"right": (180, 420), "left": (140, 420)}
             },
             "effects": effects
         }
@@ -151,7 +151,7 @@ class GenericPropManager:
             "attachment_type": "waist_carry",
             "visible": False,
             "attachment_offsets": attachment_offsets or {
-                "waist_carry": {"right": (185, 245), "left": (100, 245)}
+                "waist_carry": {"right": (180, 420), "left": (140, 420)}
             },
             "effects": {
                 "glow": {"enabled": True, "color": list(glow_color)},

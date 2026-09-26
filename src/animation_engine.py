@@ -10,7 +10,7 @@ import sys
 import math
 import numpy as np
 import cv2
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFilter
 
 from .face_engine import FacePerformanceEngine
 from .arm_ik import ArmGestureRenderer
@@ -66,7 +66,7 @@ class WalkCycleController:
 
         # Adobe Animate Speed Principle: Synchronize gait frequency to travel distance
         if travel_distance is not None and abs(travel_distance) > 50 and total_walk_frames and total_walk_frames > 0:
-            n_cycles = max(1.0, round(abs(travel_distance) / 320.0))
+            n_cycles = max(1.0, round(abs(travel_distance) / 160.0))
             eff_cycle_frames = float(total_walk_frames) / n_cycles
         else:
             eff_cycle_frames = self.cycle_frames / prof["speed"]
@@ -195,6 +195,7 @@ class GestureController:
         torso_roll = 0.0
         scale_x = 1.0
         scale_y = 1.0
+        sit_progress = 0.0
         
         # 1. Emotional & Reactive States
         if act == "shiver":
@@ -326,9 +327,9 @@ class GestureController:
             head_rot = 2.0 * ease
             
         elif act in ["carry", "hold_object"]:
-            # Carrying stove / vessel at waist
-            right_arm_rot = -24.0
-            left_arm_rot = 24.0
+            # Carrying stove / vessel firmly clamped at waist
+            right_arm_rot = -32.0
+            left_arm_rot = 32.0
             bob_y = 2.0
             
         elif act in ["give_object"]:
@@ -363,21 +364,37 @@ class GestureController:
             head_rot = 8.0
             
         elif act in ["sit"]:
-            # Believable seated posture: smooth descent, lowered hip pivot, subtle torso lean
-            ease = min(1.0, frame_idx / max(1, min(16, total_frames)))
+            # Real 2D Cutout Sitting: Deep pelvic descent, torso leans forward for balance, arms fold onto lap
+            ease = min(1.0, frame_idx / max(1, min(18, total_frames)))
             smooth_ease = 3.0 * (ease ** 2) - 2.0 * (ease ** 3)
-            bob_y = 80.0 * smooth_ease
-            scale_y = 1.0 - 0.12 * smooth_ease
-            torso_roll = 1.5 * smooth_ease
-            head_rot = 2.0 * smooth_ease
+            bob_y = 120.0 * smooth_ease
+            torso_roll = 12.0 * smooth_ease
+            head_rot = -5.0 * smooth_ease
+            left_arm_rot = 26.0 * smooth_ease
+            right_arm_rot = -26.0 * smooth_ease
+            sit_progress = smooth_ease
             
         elif act in ["stand"]:
-            # Smooth rising from seated posture back to baseline upright stance
-            ease = min(1.0, frame_idx / max(1, min(16, total_frames)))
-            smooth_ease = 3.0 * (ease ** 2) - 2.0 * (ease ** 3)
-            bob_y = 80.0 * (1.0 - smooth_ease)
-            scale_y = 0.88 + 0.12 * smooth_ease
-            torso_roll = 1.5 * (1.0 - smooth_ease)
+            # Real 2D Cutout Standing: Anticipation forward lean, push-off, rising ascent, upright settling
+            t = min(1.0, frame_idx / max(1, min(18, total_frames)))
+            if t < 0.25:
+                ant_t = t / 0.25
+                ant_ease = math.sin(ant_t * math.pi)
+                bob_y = 120.0 + 6.0 * ant_ease
+                torso_roll = 12.0 + 4.0 * ant_ease
+                head_rot = -5.0 - 2.0 * ant_ease
+                left_arm_rot = 26.0 + 6.0 * ant_ease
+                right_arm_rot = -26.0 - 6.0 * ant_ease
+                sit_progress = 1.0
+            else:
+                rise_t = (t - 0.25) / 0.75
+                rise_ease = 3.0 * (rise_t ** 2) - 2.0 * (rise_t ** 3)
+                bob_y = 120.0 * (1.0 - rise_ease)
+                torso_roll = 12.0 * (1.0 - rise_ease)
+                head_rot = -5.0 * (1.0 - rise_ease)
+                left_arm_rot = 26.0 * (1.0 - rise_ease)
+                right_arm_rot = -26.0 * (1.0 - rise_ease)
+                sit_progress = 1.0 - rise_ease
             
         elif act in ["idle"]:
             # Resting calm idle posture
@@ -385,50 +402,60 @@ class GestureController:
             bob_y = math.sin(frame_idx * 0.15 + char_seed) * 1.0
             left_arm_rot = 0.0
             right_arm_rot = 0.0
+            sit_progress = 0.0
             
         elif act in ["point", "accuse"]:
             ease = math.sin(prog * math.pi) if prog < 0.9 else 0.0
-            right_arm_rot = -32.0 * ease + math.sin(frame_idx * 0.5) * 8.0
-            left_arm_rot = 10.0 * ease
-            head_rot = 4.0 * ease
-            torso_roll = 3.0 * ease
+            right_arm_rot = -38.0 * ease + math.sin(frame_idx * 0.5) * 8.0
+            left_arm_rot = 12.0 * ease
+            head_rot = 5.0 * ease
+            torso_roll = 4.0 * ease
+            sit_progress = 0.0
             
         elif act in ["turn", "turn_around", "turn_left", "turn_right"]:
-            # Head and torso lead with natural puppet lateral turn compression
-            turn_t = min(1.0, frame_idx / max(1, min(14, total_frames)))
-            turn_arc = math.sin(turn_t * math.pi)
-            head_rot = -8.0 * turn_arc
-            torso_roll = -2.8 * turn_arc
-            scale_x = 1.0 - 0.28 * turn_arc
+            # 3-Stage Cutout Breakdown Turn: Anticipation -> Breakdown Profile Silhouette -> Settle Recovery
+            turn_t = min(1.0, frame_idx / max(1, min(16, total_frames)))
+            turn_compression = math.sin(turn_t * math.pi)
+            scale_x = 1.0 - 0.72 * turn_compression  # Compresses down to 0.28 at midpoint
+            scale_y = 1.0 + 0.04 * turn_compression  # 2D volume preservation
+            head_rot = -12.0 * turn_compression
+            torso_roll = -4.0 * turn_compression
+            sit_progress = 0.0
             
         elif act in ["look_left"]:
             head_rot = -8.0
+            sit_progress = 0.0
             
         elif act in ["look_right"]:
             head_rot = 8.0
+            sit_progress = 0.0
             
         elif act in ["gesture", "talk", "speaking"]:
-            # Expressive speaking gesture articulation (multi-harmonic frequencies and character-seed offset)
+            # Communicative character acting: speech cadence, head accent nod, expressive gesture
             t_spk = frame_idx * 0.45 + char_seed
-            head_rot = math.sin(t_spk) * 4.5 + math.sin(t_spk * 0.35) * 1.5
-            bob_y = math.sin(t_spk) * 3.5
-            right_arm_rot = -22.0 + math.sin(frame_idx * 0.32 + char_seed) * 14.0 + math.sin(frame_idx * 0.12) * 5.0
-            left_arm_rot = 16.0 + math.cos(frame_idx * 0.26 + char_seed) * 10.0 + math.cos(frame_idx * 0.14) * 4.0
-            torso_roll = math.sin(frame_idx * 0.28 + char_seed) * 2.5
+            head_rot = math.sin(t_spk) * 3.8 + math.cos(t_spk * 0.5) * 1.6
+            bob_y = math.sin(t_spk) * 2.8
+            gesture_phase = math.sin(frame_idx * 0.28 + char_seed)
+            right_arm_rot = -24.0 + gesture_phase * 16.0
+            left_arm_rot = 14.0 + math.cos(frame_idx * 0.22 + char_seed) * 8.0
+            torso_roll = 1.8 + math.sin(frame_idx * 0.25 + char_seed) * 1.5
+            sit_progress = 0.0
             
         elif is_speaker:
             # Natural talking articulation
             t_spk = frame_idx * 0.45 + char_seed
-            head_rot = math.sin(t_spk) * 4.0 + math.sin(t_spk * 0.3) * 1.2
-            bob_y = math.sin(t_spk) * 3.0
-            right_arm_rot = -18.0 + math.sin(frame_idx * 0.3 + char_seed) * 11.0 + math.sin(frame_idx * 0.1) * 4.0
-            left_arm_rot = 12.0 + math.cos(frame_idx * 0.24 + char_seed) * 8.0 + math.cos(frame_idx * 0.12) * 3.0
-            torso_roll = math.sin(frame_idx * 0.25 + char_seed) * 2.0
+            head_rot = math.sin(t_spk) * 3.6 + math.sin(t_spk * 0.3) * 1.2
+            bob_y = math.sin(t_spk) * 2.5
+            right_arm_rot = -20.0 + math.sin(frame_idx * 0.3 + char_seed) * 12.0
+            left_arm_rot = 12.0 + math.cos(frame_idx * 0.24 + char_seed) * 8.0
+            torso_roll = math.sin(frame_idx * 0.25 + char_seed) * 1.8
+            sit_progress = 0.0
             
         else:
             # Alive listener: subtle attentive nodding with character phase
             listen_cycle = 48
             listen_frame = (frame_idx + int(char_seed * 20)) % listen_cycle
+            sit_progress = 0.0
             if listen_frame < 14:
                 head_rot = math.sin((listen_frame / 14.0) * math.pi) * 3.0
                 
@@ -441,7 +468,8 @@ class GestureController:
             "bob_y": bob_y,
             "torso_roll": torso_roll,
             "scale_x": scale_x,
-            "scale_y": scale_y
+            "scale_y": scale_y,
+            "sit_progress": sit_progress
         }
 
 class PuppetRenderer:
@@ -477,6 +505,17 @@ class PuppetRenderer:
                 base = parts["cook_right"].copy()
             else:
                 base = parts["cook"].copy()
+        elif char_id == "kodalu":
+            rig_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets", "characters", "kodalu", "rig"))
+            clean_file = os.path.join(rig_dir, "torso_head_clean.png")
+            if os.path.exists(clean_file):
+                base = Image.open(clean_file).convert("RGBA")
+            elif parts.get("base_clean") is not None:
+                base = parts["base_clean"].copy()
+            else:
+                base = parts["base"].copy()
+        elif parts.get("base_clean") is not None and ((mouth_cue and mouth_cue != "mouth_closed") or emotion in ["sad", "cry", "weep", "angry", "scold"]):
+            base = parts["base_clean"].copy()
         else:
             base = parts["base"].copy()
         is_back = (orientation == "back")
@@ -533,36 +572,66 @@ class PuppetRenderer:
                     intensity=emotion_intensity
                 )
 
-            # Composite true 2D mouth viseme sprite when speaking
+        # Clean mouth rendering: For Kodalu, feather skin patch over the mouth region
+        # to erase the baked-in open smile, then composite clean closed mouth or non-empty viseme
+        if not is_back:
             m_cue_str = str(mouth_cue).lower().strip() if mouth_cue else "mouth_closed"
+            if char_id == "kodalu":
+                arr_b = np.array(base)
+                hb, wb, _ = arr_b.shape
+                skin_sample = arr_b[150, 265, :3].astype(np.float32)
+                y_c, x_c = np.ogrid[:hb, :wb]
+                dist_m = ((x_c - 265.0) / 28.0) ** 2 + ((y_c - 168.0) / 13.0) ** 2
+                mask_m = np.clip(1.0 - dist_m, 0.0, 1.0).astype(np.float32)
+                mask_m = (3.0 * mask_m**2 - 2.0 * mask_m**3)[:, :, None]
+                skin_p = np.zeros_like(arr_b[:, :, :3], dtype=np.float32)
+                skin_p[:, :] = skin_sample
+                arr_b[:, :, :3] = (arr_b[:, :, :3].astype(np.float32) * (1.0 - mask_m) + skin_p * mask_m).astype(np.uint8)
+                base = Image.fromarray(arr_b)
+                
+            mouth_img = None
             if m_cue_str != "mouth_closed" and parts.get("mouths"):
                 mouth_img = parts["mouths"].get(m_cue_str)
                 if not mouth_img and parts.get(m_cue_str):
                     mouth_img = parts[m_cue_str]
-                if mouth_img is not None:
+            elif m_cue_str == "mouth_closed" and parts.get("mouths"):
+                if emotion in ["sad", "cry", "weep", "cower", "fear"] and parts["mouths"].get("mouth_sad"):
+                    mouth_img = parts["mouths"]["mouth_sad"]
+                elif emotion in ["angry", "scold"] and parts["mouths"].get("mouth_angry"):
+                    mouth_img = parts["mouths"]["mouth_angry"]
+                elif parts["mouths"].get("mouth_closed") and np.array(parts["mouths"]["mouth_closed"])[:, :, 3].max() > 0:
+                    mouth_img = parts["mouths"]["mouth_closed"]
+
+            if mouth_img is not None and np.array(mouth_img)[:, :, 3].max() > 0:
+                if mouth_img.size == base.size:
+                    base.alpha_composite(mouth_img)
+                else:
                     arr_m = np.array(mouth_img)
-                    if arr_m.ndim == 3 and arr_m.shape[2] == 4:
-                        alpha_m = arr_m[:, :, 3]
-                        pts = np.argwhere(alpha_m > 10)
-                        if len(pts) > 0:
-                            y0, x0 = pts.min(axis=0)
-                            y1, x1 = pts.max(axis=0)
-                            cx_m = (x0 + x1) / 2.0
-                            cy_m = (y0 + y1) / 2.0
-                            dx_m = int(round(mc[0] - cx_m))
-                            dy_m = int(round(mc[1] - cy_m))
-                            
-                            w_b, h_b = base.size
-                            shifted_m = Image.new("RGBA", (w_b, h_b), (0, 0, 0, 0))
-                            shifted_m.paste(mouth_img, (dx_m, dy_m), mouth_img)
-                            
-                            # Anti-alias alpha boundary for clean cutout aesthetic
-                            arr_shifted = np.array(shifted_m)
-                            a_ch = arr_shifted[:, :, 3].astype(np.float32)
-                            blurred_a = cv2.GaussianBlur(a_ch, (3, 3), 0.6)
-                            arr_shifted[:, :, 3] = np.clip(blurred_a, 0, 255).astype(np.uint8)
-                            
-                            base = Image.alpha_composite(base, Image.fromarray(arr_shifted))
+                    alpha_m = arr_m[:, :, 3]
+                    pts = np.argwhere(alpha_m > 10)
+                    if len(pts) > 0:
+                        y0, x0 = pts.min(axis=0)
+                        y1, x1 = pts.max(axis=0)
+                        cx_m = (x0 + x1) / 2.0
+                        cy_m = (y0 + y1) / 2.0
+                        dx_m = int(round(mc[0] - cx_m))
+                        dy_m = int(round(mc[1] - cy_m))
+                        w_b, h_b = base.size
+                        shifted_m = Image.new("RGBA", (w_b, h_b), (0, 0, 0, 0))
+                        shifted_m.paste(mouth_img, (dx_m, dy_m), mouth_img)
+                        base.alpha_composite(shifted_m)
+            elif char_id == "kodalu" and m_cue_str == "mouth_closed":
+                # High-fidelity natural closed lip seam on clean skin
+                draw_m = ImageDraw.Draw(base)
+                cx_k, cy_k = 265, 168
+                seam_col = (95, 30, 28)
+                lip_col = (168, 62, 58)
+                if emotion in ["sad", "cry", "weep", "cower"]:
+                    draw_m.arc([cx_k - 16, cy_k, cx_k + 16, cy_k + 12], start=200, end=340, fill=seam_col, width=2)
+                else:
+                    draw_m.line([(cx_k - 15, cy_k), (cx_k + 15, cy_k)], fill=seam_col, width=2)
+                    draw_m.line([(cx_k - 8, cy_k - 1), (cx_k + 8, cy_k - 1)], fill=lip_col, width=1)
+                    draw_m.line([(cx_k - 9, cy_k + 2), (cx_k + 9, cy_k + 2)], fill=lip_col, width=1)
             
         np_base = np.array(base)
         h, w, c = np_base.shape
@@ -601,144 +670,304 @@ class PuppetRenderer:
             torso_roll += math.sin(frame_idx * 2.8) * 3.2 * emotion_intensity
             y_bob += math.sin(frame_idx * 3.5) * 4.0 * emotion_intensity
 
-        # Base body remains completely intact - preserving 100% illustration fidelity
-        # Characters are cutouts with reusable poses; limbs are articulated without tearing base artwork
-        body_base = np_base.copy()
+        if char_id == "kodalu":
+            rig_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "assets", "characters", "kodalu", "rig"))
+            saree_path = os.path.join(rig_dir, "lower_body_saree.png")
+            foot_l_path = os.path.join(rig_dir, "foot_l.png")
+            foot_r_path = os.path.join(rig_dir, "foot_r.png")
+            
+            saree_img = Image.open(saree_path).convert("RGBA") if os.path.exists(saree_path) else None
+            foot_l_img = Image.open(foot_l_path).convert("RGBA") if os.path.exists(foot_l_path) else None
+            foot_r_img = Image.open(foot_r_path).convert("RGBA") if os.path.exists(foot_r_path) else None
+            
+            # 1. Lower body saree with shear / wave math (applied to saree layer only)
+            if saree_img is not None:
+                saree_arr = np.array(saree_img)
+                # Patch saree waist from base illustration (spanning y=480..560) to eliminate alpha gaps when sheared
+                base_orig = parts.get("base")
+                if base_orig is not None:
+                    base_orig_arr = np.array(base_orig)
+                    patch_mask = (base_orig_arr[480:560, :, 3] > 50) & (saree_arr[480:560, :, 3] < 200)
+                    saree_arr[480:560, :][patch_mask] = base_orig_arr[480:560, :][patch_mask]
 
-        # Segment 1: Lower Saree & Legs (y from 480 to 900)
-        # True dual-foot alternating kinematics (Contact -> Down -> Pass -> Up -> Contact)
-        if walk_state and abs(walk_state.get("dampen", 1.0)) > 0.01:
-            phase = walk_state.get("phase", 0.0)
-            dampen = walk_state.get("dampen", 1.0)
-            lift_l = walk_state.get("left_foot_lift", 0.0)
-            lift_r = walk_state.get("right_foot_lift", 0.0)
-            s_wave = walk_state.get("saree_wave", 0.0)
-            
-            facing_dir = -1.0 if ("left" in orientation) else 1.0
-            
-            y_coords, x_coords = np.ogrid[:h, :w]
-            v_prog = np.clip((y_coords - 500.0) / 360.0, 0.0, 1.0).astype(np.float32)
-            v_prog = (3.0 * v_prog**2 - 2.0 * v_prog**3)
-            
-            # Leg lateral centers (Near leg vs Far leg depending on 3/4 facing)
-            if "left" in orientation:
-                xc1 = float(xc - 45) # Near leg (facing left)
-                xc2 = float(xc + 45) # Far leg
+                if walk_state and abs(walk_state.get("dampen", 1.0)) > 0.01:
+                    phase = walk_state.get("phase", 0.0)
+                    dampen = walk_state.get("dampen", 1.0)
+                    s_wave = walk_state.get("saree_wave", 0.0)
+                    
+                    is_flip = CharacterRegistry.should_flip(char_id, orientation)
+                    facing_sign = -1.0 if ("left" in orientation) else 1.0
+                    eff_dir = -facing_sign if is_flip else facing_sign
+                    
+                    grid_y, grid_x = np.mgrid[:h, :w].astype(np.float32)
+                    v_prog = np.clip((grid_y - 515.0) / 345.0, 0.0, 1.0)
+                    v_prog = (3.0 * v_prog**2 - 2.0 * v_prog**3)
+                    
+                    dx_stride = -(walk_state.get("stride_shear", 0.0) * 1.5) * eff_dir * v_prog
+                    dx_wave = (s_wave * np.sin(v_prog * math.pi) * eff_dir)
+                    dy_bob = y_bob * (1.0 - v_prog)
+                    
+                    map_x = grid_x - dx_stride - dx_wave
+                    map_y = grid_y - dy_bob
+                    warped_saree = cv2.remap(saree_arr, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+                elif abs(stride_shear) > 0.5:
+                    shear_factor = stride_shear / 360.0
+                    M_lower = np.array([
+                        [1.0, shear_factor, -shear_factor * 540.0],
+                        [0.0, 1.0, 0.0]
+                    ], dtype=np.float32)
+                    warped_saree = cv2.warpAffine(saree_arr, M_lower, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+                else:
+                    warped_saree = saree_arr.copy()
             else:
-                xc1 = float(xc + 45) # Near leg (facing right)
-                xc2 = float(xc - 45) # Far leg
+                warped_saree = np.zeros((h, w, 4), dtype=np.uint8)
                 
-            w1 = np.clip(1.0 - abs(x_coords - xc1) / 110.0, 0.0, 1.0).astype(np.float32)
-            w2 = np.clip(1.0 - abs(x_coords - xc2) / 110.0, 0.0, 1.0).astype(np.float32)
-            w_sum = np.maximum(1.0, w1 + w2)
-            w1 = w1 / w_sum
-            w2 = w2 / w_sum
+            # 2. Feet with ground contact, swing lift, and skin-toned ankle/shin filler
+            lift_l = walk_state.get("left_foot_lift", 0.0) if walk_state else 0.0
+            lift_r = walk_state.get("right_foot_lift", 0.0) if walk_state else 0.0
             
-            # Stride displacement: Leg 1 and Leg 2 alternate forward/backward
-            L_stride = 28.0 * dampen
-            dx1 = -L_stride * math.cos(phase) * facing_dir
-            dx2 = +L_stride * math.cos(phase) * facing_dir
-            
-            dx_legs = (w1 * dx1 + w2 * dx2) * v_prog
-            dy_legs = (w1 * (-lift_l) + w2 * (-lift_r)) * v_prog
-            
-            # Saree fabric wave
-            dx_wave = (math.sin(phase - 0.4) * 8.0 * np.sin(v_prog * math.pi) * facing_dir * dampen).astype(np.float32)
-            
-            map_x = (x_coords.astype(np.float32) - dx_legs - dx_wave).astype(np.float32)
-            map_y = (y_coords.astype(np.float32) - dy_legs).astype(np.float32)
-            
-            lower_part = cv2.remap(body_base, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-        elif abs(stride_shear) > 0.5:
-            shear_factor = stride_shear / 360.0
-            M_lower = np.array([
-                [1.0, shear_factor, -shear_factor * 540.0],
-                [0.0, 1.0, 0.0]
-            ], dtype=np.float32)
-            lower_part = cv2.warpAffine(body_base, M_lower, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-        else:
-            lower_part = body_base.copy()
-            
-        # Segment 2: Torso & Spine (pivoted from character hip pivot)
-        rad_torso = math.radians(torso_roll)
-        if abs(torso_roll) > 0.1:
+            def make_feathered_filler(poly_pts, color=(195, 128, 88), blur_radius=1.8):
+                mask = Image.new("L", (w, h), 0)
+                d = ImageDraw.Draw(mask)
+                d.polygon(poly_pts, fill=255)
+                mask = mask.filter(ImageFilter.GaussianBlur(radius=blur_radius))
+                color_img = Image.new("RGBA", (w, h), (*color, 255))
+                color_img.putalpha(mask)
+                return color_img
+
+            if foot_l_img is not None:
+                arr_l = np.array(foot_l_img)
+                # Clean yellow hem border, red saree cloth, and white background fringing from cutout
+                for y_s in range(850, 877):
+                    for x_s in range(190, 275):
+                        r_p, g_p, b_p, a_p = arr_l[y_s, x_s]
+                        if a_p > 0:
+                            is_yellow = (r_p > 175 and g_p > 125 and b_p < 90)
+                            is_red = (r_p > 130 and g_p < 95 and b_p < 75)
+                            is_white = (r_p > 220 and g_p > 220 and b_p > 220)
+                            if is_yellow or is_red or is_white:
+                                arr_l[y_s, x_s] = [0, 0, 0, 0]
+                
+                # Skin-toned ankle/shin filler bridging foot to saree hem (deep overlap Y: 760..878)
+                ankle_l_feathered = make_feathered_filler([(225, 760), (262, 760), (267, 878), (215, 878)], color=(195, 128, 88), blur_radius=1.8)
+                
+                foot_l_full = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+                foot_l_full.alpha_composite(ankle_l_feathered)
+                foot_l_full.alpha_composite(Image.fromarray(arr_l))
+                
+                M_fl = np.array([[1.0, 0.0, 0.0],
+                                 [0.0, 1.0, -lift_l]], dtype=np.float32)
+                warped_foot_l = cv2.warpAffine(np.array(foot_l_full), M_fl, (w, h), flags=cv2.INTER_LINEAR)
+            else:
+                warped_foot_l = np.zeros((h, w, 4), dtype=np.uint8)
+                
+            if foot_r_img is not None:
+                arr_r = np.array(foot_r_img)
+                # Clean yellow hem residue, red saree cloth, and white fringing from cutout
+                for y_s in range(850, 875):
+                    for x_s in range(290, 368):
+                        r_p, g_p, b_p, a_p = arr_r[y_s, x_s]
+                        if a_p > 0:
+                            is_yellow = (r_p > 175 and g_p > 125 and b_p < 90)
+                            is_red = (r_p > 130 and g_p < 95 and b_p < 75)
+                            is_white = (r_p > 220 and g_p > 220 and b_p > 220)
+                            if is_yellow or is_red or is_white:
+                                arr_r[y_s, x_s] = [0, 0, 0, 0]
+                        
+                ankle_r_feathered = make_feathered_filler([(308, 760), (350, 760), (358, 878), (298, 878)], color=(195, 128, 88), blur_radius=1.8)
+                
+                foot_r_full = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+                foot_r_full.alpha_composite(ankle_r_feathered)
+                foot_r_full.alpha_composite(Image.fromarray(arr_r))
+                
+                M_fr = np.array([[1.0, 0.0, 0.0],
+                                 [0.0, 1.0, -lift_r]], dtype=np.float32)
+                warped_foot_r = cv2.warpAffine(np.array(foot_r_full), M_fr, (w, h), flags=cv2.INTER_LINEAR)
+            else:
+                warped_foot_r = np.zeros((h, w, 4), dtype=np.uint8)
+                
+            # 3. Torso Head: Pelvic bob and torso_roll applied to torso_head only
+            torso_clean_arr = np_base.copy()
             M_torso = cv2.getRotationMatrix2D(hip_pivot, torso_roll, 1.0)
-            torso_part = cv2.warpAffine(body_base, M_torso, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-        else:
-            torso_part = body_base.copy()
-
-        # Real Illustrated Arm Articulation (Walking swing + Speaking gestures)
-        # Articulates actual illustrated pixels pivoted at shoulders without stick arms or fake patches
-        arm_l_angle = left_arm_rot
-        arm_r_angle = right_arm_rot
-        if walk_state and abs(walk_state.get("dampen", 1.0)) > 0.01:
-            arm_l_angle += walk_state.get("left_arm_angle", 0.0)
-            arm_r_angle += walk_state.get("right_arm_angle", 0.0)
+            M_torso[1, 2] += y_bob
+            warped_torso = cv2.warpAffine(torso_clean_arr, M_torso, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
             
-        if abs(arm_l_angle) > 0.5 or abs(arm_r_angle) > 0.5:
-            if abs(arm_r_angle) > 0.5:
-                M_r = cv2.getRotationMatrix2D(right_shoulder, arm_r_angle, 1.0)
-                warped_r = cv2.warpAffine(torso_part, M_r, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-            else:
-                warped_r = torso_part
+            # Head counter-stabilization / tilt
+            total_head_rot = head_rot + torso_roll
+            if abs(total_head_rot) > 0.1:
+                rad_t = math.radians(torso_roll)
+                cos_t = math.cos(rad_t)
+                sin_t = math.sin(rad_t)
+                xn = hip_pivot[0] + (neck_pivot[0] - hip_pivot[0]) * cos_t - (neck_pivot[1] - hip_pivot[1]) * sin_t
+                yn = hip_pivot[1] + (neck_pivot[0] - hip_pivot[0]) * sin_t + (neck_pivot[1] - hip_pivot[1]) * cos_t + y_bob
+                M_head = cv2.getRotationMatrix2D((xn, yn), head_rot, 1.0)
+                y_idx = np.arange(h)[:, None]
+                head_mask = np.clip((int(yn + 20) - y_idx) / 25.0, 0.0, 1.0).astype(np.float32)
+                warped_head = cv2.warpAffine(warped_torso, M_head, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+                warped_torso = (warped_head.astype(np.float32) * head_mask[:, :, None] + warped_torso.astype(np.float32) * (1.0 - head_mask[:, :, None])).astype(np.uint8)
                 
-            if abs(arm_l_angle) > 0.5:
-                M_l = cv2.getRotationMatrix2D(left_shoulder, arm_l_angle, 1.0)
-                warped_l = cv2.warpAffine(torso_part, M_l, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-            else:
-                warped_l = torso_part
-
-            y_grid, x_grid = np.ogrid[:h, :w]
-            v_arm = np.clip(1.0 - abs(y_grid - (ys + 110.0)) / 130.0, 0.0, 1.0).astype(np.float32)
-            v_arm_smooth = (3.0 * v_arm**2 - 2.0 * v_arm**3)
+            # 4. Composite Lower Body (feet under saree, saree under torso)
+            canvas_lower = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+            canvas_lower.alpha_composite(Image.fromarray(warped_foot_l))
+            canvas_lower.alpha_composite(Image.fromarray(warped_foot_r))
+            canvas_lower.alpha_composite(Image.fromarray(warped_saree))
             
-            r_arm_mask = np.clip((x_grid - float(xc + 20)) / 50.0, 0.0, 1.0).astype(np.float32) * v_arm_smooth
-            l_arm_mask = np.clip((float(xc - 20) - x_grid) / 50.0, 0.0, 1.0).astype(np.float32) * v_arm_smooth
+            canvas_torso = Image.fromarray(warped_torso)
             
-            torso_part = (torso_part.astype(np.float32) * (1.0 - r_arm_mask[:, :, None]) + warped_r.astype(np.float32) * r_arm_mask[:, :, None])
-            torso_part = (torso_part * (1.0 - l_arm_mask[:, :, None]) + warped_l.astype(np.float32) * l_arm_mask[:, :, None])
-            torso_part = np.clip(torso_part, 0, 255).astype(np.uint8)
-            
-        # Segment 3: Head & Neck (follows hierarchical neck pivot)
-        cos_t = math.cos(rad_torso)
-        sin_t = math.sin(rad_torso)
-        xn_trans = hip_pivot[0] + (neck_pivot[0] - hip_pivot[0]) * cos_t - (neck_pivot[1] - hip_pivot[1]) * sin_t
-        yn_trans = hip_pivot[1] + (neck_pivot[0] - hip_pivot[0]) * sin_t + (neck_pivot[1] - hip_pivot[1]) * cos_t
-        curr_neck_pivot = (float(xn_trans), float(yn_trans))
-        
-        total_head_rot = head_rot + torso_roll
-        if abs(total_head_rot) > 0.1:
-            M_head = cv2.getRotationMatrix2D(curr_neck_pivot, total_head_rot, 1.0)
-            head_part = cv2.warpAffine(body_base, M_head, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+            # 5. Composite Arms via ArmGestureRenderer in z-index order
+            g_prog = gesture_state.get("progress", frame_idx / 24.0) if gesture_state else (frame_idx / 24.0)
+            final_pil = PuppetRenderer.arm_renderer.render_arm_overlay(
+                canvas=canvas_lower,
+                char_id=char_id,
+                gesture=gesture_pose,
+                progress=g_prog,
+                audio_stress=audio_stress,
+                walk_state=walk_state,
+                torso_layer=canvas_torso
+            )
         else:
-            head_part = body_base.copy()
+            # Base body remains completely intact - preserving 100% illustration fidelity
+            # Characters are cutouts with reusable poses; limbs are articulated without tearing base artwork
+            body_base = np_base.copy()
+
+            # Segment 1: Lower Saree & Legs (y from 480 to 900)
+            # Seated folding kinematics OR true dual-foot alternating walk kinematics
+            sit_prog = gesture_state.get("sit_progress", 0.0) if gesture_state else 0.0
             
-        # Seamless vertical gradient blending across segments
-        grad_lower = np.clip((np.arange(h)[:, None] - 500) / 40.0, 0.0, 1.0).astype(np.float32)
-        neck_seam_y = int(yn_trans - 15)
-        grad_head = np.clip((neck_seam_y - np.arange(h)[:, None]) / 25.0, 0.0, 1.0).astype(np.float32)
-        grad_torso = 1.0 - np.maximum(grad_lower, grad_head)
-        
-        blended = (head_part * grad_head[:, :, None] +
-                   torso_part * grad_torso[:, :, None] +
-                   lower_part * grad_lower[:, :, None]).astype(np.uint8)
+            if sit_prog > 0.01:
+                # Real 2D Cutout Seated Lower Body: Knees fold, hem spreads laterally at floor, compresses vertically
+                grid_y, grid_x = np.mgrid[:h, :w].astype(np.float32)
+                v_sit = np.clip((grid_y - 480.0) / 380.0, 0.0, 1.0)
+                # Vertical compression: lower half compresses by up to 45% (positive dy in map_y compresses upward)
+                dy_sit = v_sit * (180.0 * sit_prog)
+                # Lateral expansion: hem spreads outward into stable floor triangle
+                dx_sit = (grid_x - float(xc)) * (0.32 * sit_prog * v_sit)
+                map_x_sit = grid_x - dx_sit
+                map_y_sit = grid_y + dy_sit
+                lower_part = cv2.remap(body_base, map_x_sit, map_y_sit, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+            elif walk_state and abs(walk_state.get("dampen", 1.0)) > 0.01:
+                phase = walk_state.get("phase", 0.0)
+                dampen = walk_state.get("dampen", 1.0)
+                lift_l = walk_state.get("left_foot_lift", 0.0)
+                lift_r = walk_state.get("right_foot_lift", 0.0)
+                s_wave = walk_state.get("saree_wave", 0.0)
+                
+                # Stride direction in screen space
+                is_flip = CharacterRegistry.should_flip(char_id, orientation)
+                facing_sign = -1.0 if ("left" in orientation) else 1.0
+                # If flipped horizontally at the end, negate displacement in base coordinates
+                eff_dir = -facing_sign if is_flip else facing_sign
+                
+                grid_y, grid_x = np.mgrid[:h, :w].astype(np.float32)
+                v_prog = np.clip((grid_y - 500.0) / 360.0, 0.0, 1.0)
+                v_prog = (3.0 * v_prog**2 - 2.0 * v_prog**3)
+                
+                # True 2D Grounded Dual-Leg Stride Mechanics
+                L_stride = 52.0 * dampen
+                dx_stride = -L_stride * math.cos(phase) * eff_dir * v_prog
+                # Leading knee forward flex
+                v_knee = np.clip(np.sin(v_prog * math.pi), 0.0, 1.0)
+                dx_knee = (26.0 * max(0.0, -math.cos(phase)) * eff_dir * dampen * v_knee)
+                # Vertical foot lift during swing phase
+                lift_vert = (lift_l if math.sin(phase) < 0 else lift_r) * v_prog
+                
+                # Saree fabric wave
+                dx_wave = (math.sin(phase - 0.4) * 10.0 * np.sin(v_prog * math.pi) * eff_dir * dampen)
+                
+                map_x = grid_x - dx_stride - dx_knee - dx_wave
+                map_y = grid_y + lift_vert
+                
+                lower_part = cv2.remap(body_base, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+            elif abs(stride_shear) > 0.5:
+                shear_factor = stride_shear / 360.0
+                M_lower = np.array([
+                    [1.0, shear_factor, -shear_factor * 540.0],
+                    [0.0, 1.0, 0.0]
+                ], dtype=np.float32)
+                lower_part = cv2.warpAffine(body_base, M_lower, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+            else:
+                lower_part = body_base.copy()
+                
+            # Segment 2: Torso & Spine (pivoted from character hip pivot)
+            rad_torso = math.radians(torso_roll)
+            if abs(torso_roll) > 0.1:
+                M_torso = cv2.getRotationMatrix2D(hip_pivot, torso_roll, 1.0)
+                torso_part = cv2.warpAffine(body_base, M_torso, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+            else:
+                torso_part = body_base.copy()
 
-        # Composite separate layered limbs if separate arm sprites exist in character pack
-        if parts.get("arm_l") is not None and abs(left_arm_rot) > 0.4:
-            arm_img_l = parts["arm_l"]
-            M_arm_l = cv2.getRotationMatrix2D(left_shoulder, left_arm_rot, 1.0)
-            warped_arm_l = cv2.warpAffine(np.array(arm_img_l), M_arm_l, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-            arm_a_l = (warped_arm_l[:, :, 3:] / 255.0).astype(np.float32)
-            blended = (warped_arm_l * arm_a_l + blended * (1.0 - arm_a_l)).astype(np.uint8)
+            # Real Illustrated Arm Articulation (Walking swing + Speaking gestures)
+            # Articulates actual illustrated pixels pivoted at shoulders without stick arms or fake patches
+            arm_l_angle = left_arm_rot
+            arm_r_angle = right_arm_rot
+            is_carry = (gesture_pose in ["carry", "hold_object"])
+            if walk_state and abs(walk_state.get("dampen", 1.0)) > 0.01 and not is_carry:
+                arm_l_angle += walk_state.get("left_arm_angle", 0.0)
+                arm_r_angle += walk_state.get("right_arm_angle", 0.0)
+                
+            if abs(arm_l_angle) > 0.5 or abs(arm_r_angle) > 0.5:
+                if abs(arm_r_angle) > 0.5:
+                    M_r = cv2.getRotationMatrix2D(right_shoulder, arm_r_angle, 1.0)
+                    warped_r = cv2.warpAffine(torso_part, M_r, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+                else:
+                    warped_r = torso_part
+                    
+                if abs(arm_l_angle) > 0.5:
+                    M_l = cv2.getRotationMatrix2D(left_shoulder, arm_l_angle, 1.0)
+                    warped_l = cv2.warpAffine(torso_part, M_l, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+                else:
+                    warped_l = torso_part
 
-        if parts.get("arm_r") is not None and abs(right_arm_rot) > 0.4:
-            arm_img_r = parts["arm_r"]
-            M_arm_r = cv2.getRotationMatrix2D(right_shoulder, right_arm_rot, 1.0)
-            warped_arm_r = cv2.warpAffine(np.array(arm_img_r), M_arm_r, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-            arm_a_r = (warped_arm_r[:, :, 3:] / 255.0).astype(np.float32)
-            blended = (warped_arm_r * arm_a_r + blended * (1.0 - arm_a_r)).astype(np.uint8)
-                   
-        final_pil = Image.fromarray(blended)
+                y_grid, x_grid = np.ogrid[:h, :w]
+                v_arm = np.clip((y_grid - (ys - 15.0)) / 30.0, 0.0, 1.0).astype(np.float32)
+                
+                r_arm_mask = np.clip((x_grid - float(xc + 30)) / 45.0, 0.0, 1.0).astype(np.float32) * v_arm
+                l_arm_mask = np.clip((float(xc - 30) - x_grid) / 45.0, 0.0, 1.0).astype(np.float32) * v_arm
+                
+                torso_part = (torso_part.astype(np.float32) * (1.0 - r_arm_mask[:, :, None]) + warped_r.astype(np.float32) * r_arm_mask[:, :, None])
+                torso_part = (torso_part * (1.0 - l_arm_mask[:, :, None]) + warped_l.astype(np.float32) * l_arm_mask[:, :, None])
+                torso_part = np.clip(torso_part, 0, 255).astype(np.uint8)
+                
+            # Segment 3: Head & Neck (follows hierarchical neck pivot)
+            cos_t = math.cos(rad_torso)
+            sin_t = math.sin(rad_torso)
+            xn_trans = hip_pivot[0] + (neck_pivot[0] - hip_pivot[0]) * cos_t - (neck_pivot[1] - hip_pivot[1]) * sin_t
+            yn_trans = hip_pivot[1] + (neck_pivot[0] - hip_pivot[0]) * sin_t + (neck_pivot[1] - hip_pivot[1]) * cos_t
+            curr_neck_pivot = (float(xn_trans), float(yn_trans))
+            
+            total_head_rot = head_rot + torso_roll
+            if abs(total_head_rot) > 0.1:
+                M_head = cv2.getRotationMatrix2D(curr_neck_pivot, total_head_rot, 1.0)
+                head_part = cv2.warpAffine(body_base, M_head, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+            else:
+                head_part = body_base.copy()
+                
+            # Seamless vertical gradient blending across segments
+            grad_lower = np.clip((np.arange(h)[:, None] - 500) / 40.0, 0.0, 1.0).astype(np.float32)
+            neck_seam_y = int(yn_trans - 15)
+            grad_head = np.clip((neck_seam_y - np.arange(h)[:, None]) / 25.0, 0.0, 1.0).astype(np.float32)
+            grad_torso = 1.0 - np.maximum(grad_lower, grad_head)
+            
+            blended = (head_part * grad_head[:, :, None] +
+                       torso_part * grad_torso[:, :, None] +
+                       lower_part * grad_lower[:, :, None]).astype(np.uint8)
+
+            # Composite separate layered limbs if separate arm sprites exist in character pack
+            if parts.get("arm_l") is not None and abs(left_arm_rot) > 0.4:
+                arm_img_l = parts["arm_l"]
+                M_arm_l = cv2.getRotationMatrix2D(left_shoulder, left_arm_rot, 1.0)
+                warped_arm_l = cv2.warpAffine(np.array(arm_img_l), M_arm_l, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+                arm_a_l = (warped_arm_l[:, :, 3:] / 255.0).astype(np.float32)
+                blended = (warped_arm_l * arm_a_l + blended * (1.0 - arm_a_l)).astype(np.uint8)
+
+            if parts.get("arm_r") is not None and abs(right_arm_rot) > 0.4:
+                arm_img_r = parts["arm_r"]
+                M_arm_r = cv2.getRotationMatrix2D(right_shoulder, right_arm_rot, 1.0)
+                warped_arm_r = cv2.warpAffine(np.array(arm_img_r), M_arm_r, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+                arm_a_r = (warped_arm_r[:, :, 3:] / 255.0).astype(np.float32)
+                blended = (warped_arm_r * arm_a_r + blended * (1.0 - arm_a_r)).astype(np.uint8)
+                       
+            final_pil = Image.fromarray(blended)
 
         # Active gestures articulate the real character artwork directly via localized arm pivots above.
         # No artificial vector stick arms, no third arms, no fake solid clothing patches.

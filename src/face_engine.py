@@ -305,45 +305,10 @@ class FacePerformanceEngine:
             
         working_img = base_img.copy()
         
-        # 1. SPECIAL ARTICULATION: Seamless Sorrow / Fear Mouth Replacement for Kodalu (and aliases)
-        # When Kodalu (who has an open smiling mouth in base art) experiences sorrow or fear,
-        # replace the smiling cavity with a feathered skin blend and draw a downturned sorrow lip seam.
-        is_kodalu_crying = (cid == "kodalu" and emotion in ["sad", "cry", "weep", "cower", "fear", "crying", "intense_crying"] and intensity > 0.08)
-        if is_kodalu_crying:
-            arr_base = np.array(working_img)
-            chin_skin = np.median(arr_base[186:192, 260:280, :3], axis=(0, 1)).astype(np.uint8)
-            
-            patch_mask = Image.new('L', working_img.size, 0)
-            p_draw = ImageDraw.Draw(patch_mask)
-            # Mask covering teeth and smile dimples
-            p_draw.ellipse([238, 163, 298, 186], fill=int(255 * min(1.0, intensity * 1.3)))
-            patch_mask = patch_mask.filter(ImageFilter.GaussianBlur(radius=3.0))
-            
-            patch_skin = Image.new('RGBA', working_img.size, (int(chin_skin[0]), int(chin_skin[1]), int(chin_skin[2]), 255))
-            working_img = Image.composite(patch_skin, working_img, patch_mask)
-            
-            # Draw downturned sorrow lip seam
-            c_draw = ImageDraw.Draw(working_img)
-            quiver = math.sin(frame_idx * 1.8) * (0.8 * intensity)
-            speech_open = (audio_stress * 3.2) if audio_stress > 0.05 else 0.0
-            
-            points = []
-            for t_val in np.linspace(0, 1, 28):
-                px = 248 + (288 - 248) * t_val
-                py = 176 - (4.0 * intensity * math.sin(t_val * math.pi)) + quiver
-                points.append((px, py))
-                
-            c_draw.line([(p[0], p[1]) for p in points], fill=(75, 25, 25, int(230 * intensity)), width=2)
-            pout_pts = [(p[0], p[1] + 2.5 + speech_open) for p in points[6:22]]
-            c_draw.line(pout_pts, fill=(140, 55, 55, int(170 * intensity)), width=2)
-            
         mc = lm.get("mouth_c", (270, 175))
         ml = lm.get("mouth_l", (245, 175))
         mr = lm.get("mouth_r", (295, 175))
         v_stress = max(0.0, min(1.0, audio_stress))
-
-        # Open visemes are cleanly articulated via multi-axis radial pull mesh deformation below
-        # Preserves base illustration fidelity without artificial brown stickers or smudges
 
         img_np = np.array(working_img)
         h, w, c = img_np.shape
@@ -366,6 +331,12 @@ class FacePerformanceEngine:
         intensity = min(1.0, max(0.0, intensity))
         stress_scale = 1.0 + min(0.35, audio_stress * 0.35)
         eff_intensity = intensity * stress_scale
+        
+        # Vowel Speech Jaw Articulation: Lower jaw & chin drop naturally
+        if mouth_cue in ["mouth_open_a", "mouth_wide", "mouth_open_o"]:
+            chin_y = float(mc[1] + 16.0)
+            jaw_drop = 4.5 if mouth_cue == "mouth_wide" else 3.2
+            apply_radial_pull(mc[0], chin_y, 35.0, 0.0, jaw_drop)
         
         # 2. ANGER / SCOLD DEFORMATION (Atha fierce scowl)
         if emotion in ["angry", "scold", "irritation", "peak_anger"]:
@@ -434,6 +405,7 @@ class FacePerformanceEngine:
             apply_radial_pull(lm["mouth_r"][0], lm["mouth_r"][1], 18, 0.0, shiver_jitter * 0.7)
 
         # 8. SPEECH VISUAL ARTICULATION & VISEMES (Telugu phoneme shapes A, O, E, teeth, wide)
+        is_kodalu_crying = (cid == "kodalu" and emotion in ["cry", "weep", "crying", "intense_crying"])
         if not is_kodalu_crying:
             m_cue_str = str(mouth_cue).lower().strip() if mouth_cue else "mouth_closed"
             if m_cue_str in ["mouth_open_a", "open_a", "a"]:

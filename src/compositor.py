@@ -83,6 +83,7 @@ class AssetCache:
                 char_dir = os.path.join(ASSETS_DIR, "characters", "atha")
                 
             base_img = Image.open(os.path.join(char_dir, "base.png")).convert("RGBA")
+            base_clean_file = os.path.join(char_dir, "base_clean.png")
             eyes_open_file = os.path.join(char_dir, "eyes_open.png")
             eyes_blink_file = os.path.join(char_dir, "eyes_blink.png")
             cook_file = os.path.join(char_dir, "cook.png")
@@ -90,6 +91,7 @@ class AssetCache:
             cook_left_file = os.path.join(char_dir, "cook_left.png")
             parts = {
                 "base": base_img,
+                "base_clean": Image.open(base_clean_file).convert("RGBA") if os.path.exists(base_clean_file) else None,
                 "eyes_open": Image.open(eyes_open_file).convert("RGBA") if os.path.exists(eyes_open_file) else None,
                 "eyes_blink": Image.open(eyes_blink_file).convert("RGBA") if os.path.exists(eyes_blink_file) else None,
                 "cook": Image.open(cook_file).convert("RGBA") if os.path.exists(cook_file) else None,
@@ -98,7 +100,7 @@ class AssetCache:
                 "mouths": {}
             }
             
-            for m in ["mouth_closed", "mouth_open_a", "mouth_open_e", "mouth_open_o", "mouth_teeth", "mouth_wide"]:
+            for m in ["mouth_closed", "mouth_open_a", "mouth_open_e", "mouth_open_o", "mouth_teeth", "mouth_wide", "mouth_sad", "mouth_angry"]:
                 m_path = os.path.join(char_dir, f"{m}.png")
                 if os.path.exists(m_path):
                     parts["mouths"][m] = Image.open(m_path).convert("RGBA")
@@ -549,7 +551,8 @@ def render_story_video(script_data: dict, output_mp4: str, fps: int = 24) -> str
                         cur_gesture = perf_eval["gesture"] if perf_eval.get("gesture", "idle") != "idle" else (perf_type or action)
                         cur_chest_sink = perf_eval["chest_sink"]
                         if perf_type in ["turn", "turn_around", "turn_left", "turn_right"] or action in ["turn", "turn_around", "turn_left", "turn_right"]:
-                            if f_idx >= int(total_turn_frames * 0.45):
+                            turn_duration = max(1, min(16, total_turn_frames))
+                            if f_idx >= int(turn_duration * 0.50):
                                 if "left" in (perf_type or action):
                                     cur_orient = "3/4_left"
                                 elif "right" in (perf_type or action):

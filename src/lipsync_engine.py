@@ -2,11 +2,13 @@
 Lip-Sync Engine for Telugu Animated Stories
 Analyzes audio waveform energy, envelope, and spectral features to output
 frame-accurate mouth-shape phoneme cues at specified FPS (default 24 FPS).
+Uses word-timing-based speech alignment (Synctoon Reference Principle).
 """
 
 import os
 import sys
 import wave
+import math
 import numpy as np
 
 # Fix Windows console UTF-8 printing
@@ -63,9 +65,9 @@ def extract_telugu_phonemes(text: str) -> list:
 
 def extract_lipsync_cues(wav_path: str, fps: int = 24, text: str = "") -> list:
     """
-    Analyzes the audio file and returns a list of mouth shape names,
-    one for each video frame from 0 to total_frames - 1.
-    If dialogue text is provided, aligns Telugu phonemes to voiced audio frames.
+    Analyzes audio waveform and dialogue text to produce frame-accurate mouth visemes.
+    Implements Synctoon Reference Principle:
+    Audio waveform energy + dialogue text -> word/syllable timing -> viseme hold cues.
     """
     with wave.open(wav_path, 'rb') as wf:
         n_channels = wf.getnchannels()
@@ -75,7 +77,7 @@ def extract_lipsync_cues(wav_path: str, fps: int = 24, text: str = "") -> list:
         raw_data = wf.readframes(n_frames)
         
     duration = n_frames / float(framerate)
-    total_video_frames = int(math_ceil(duration * fps))
+    total_video_frames = int(math.ceil(duration * fps))
     
     # Convert raw PCM bytes to float numpy array
     if sampwidth == 2:
@@ -95,9 +97,6 @@ def extract_lipsync_cues(wav_path: str, fps: int = 24, text: str = "") -> list:
         audio = audio / max_val
         
     samples_per_video_frame = framerate / fps
-    frame_cues = []
-    
-    # Compute RMS energy & zero-crossing rate per frame
     energies = []
     zcrs = []
     
@@ -117,7 +116,6 @@ def extract_lipsync_cues(wav_path: str, fps: int = 24, text: str = "") -> list:
             continue
             
         rms = np.sqrt(np.mean(chunk**2))
-        # Zero crossing rate
         zcr = np.sum(np.abs(np.diff(np.sign(chunk)))) / (2.0 * len(chunk))
         
         energies.append(rms)
@@ -126,19 +124,83 @@ def extract_lipsync_cues(wav_path: str, fps: int = 24, text: str = "") -> list:
     energies = np.array(energies)
     zcrs = np.array(zcrs)
     
-    # Dynamic silence threshold (bottom 15% energy or baseline)
+    # Dynamic silence threshold
     silence_thresh = max(0.02, np.percentile(energies, 20) * 1.2)
     loud_thresh = np.percentile(energies, 85)
     
-    telugu_phonemes = extract_telugu_phonemes(text)
+    # Split text into words
+    clean_text = text.replace(",", " ").replace(".", " ").replace("!", " ").replace("?", " ")
+    words = [w.strip() for w in clean_text.split() if w.strip()]
     
-    # Find all voiced frames (speech activity)
-    voiced_indices = [idx for idx, e in enumerate(energies) if e >= silence_thresh]
+    # Find contiguous voiced regions (speech bursts)
+    voiced_mask = (energies >= silence_thresh)
+    speech_bursts = []
+    in_burst = False
+    burst_start = 0
     
+    for idx, is_v in enumerate(voiced_mask):
+        if is_v and not in_burst:
+            in_burst = True
+            burst_start = idx
+        elif not is_v and in_burst:
+            in_burst = False
+            if idx - burst_start >= 2: # At least 2 frames
+                speech_bursts.append((burst_start, idx - 1))
+    if in_burst:
+        speech_bursts.append((burst_start, len(voiced_mask) - 1))
+        
     raw_cues = [MOUTH_CLOSED] * total_video_frames
     
-    if telugu_phonemes and voiced_indices:
-        # Distribute Telugu phonemes proportionally across voiced speech frames
+    if words and speech_bursts:
+        # Synctoon principle: Map words to speech bursts proportionally
+        num_words = len(words)
+        num_bursts = len(speech_bursts)
+        
+        # Build list of all voiced frames across all bursts
+        all_voiced_frames = []
+        for b_start, b_end in speech_bursts:
+            all_voiced_frames.extend(range(b_start, b_end + 1))
+            
+        total_voiced = len(all_voiced_frames)
+        
+        # Extract phonemes per word
+        word_phoneme_lists = []
+        for w in words:
+            phs = extract_telugu_phonemes(w)
+            if not phs:
+                phs = [MOUTH_OPEN_A]
+            word_phoneme_lists.append(phs)
+            
+        # Distribute word bursts along the timeline
+        frames_per_word = max(2, total_voiced // max(1, num_words))
+        
+        v_ptr = 0
+        for w_idx, ph_list in enumerate(word_phoneme_lists):
+            w_frame_count = frames_per_word
+            if w_idx == num_words - 1:
+                w_frame_count = max(len(ph_list) * 2, total_voiced - v_ptr)
+                
+            w_frames = all_voiced_frames[v_ptr : v_ptr + w_frame_count]
+            v_ptr += w_frame_count
+            
+            if not w_frames:
+                continue
+                
+            # Distribute phonemes inside this word's frame allocation
+            num_ph = len(ph_list)
+            for p_rank, f_num in enumerate(w_frames):
+                e = energies[f_num]
+                z = zcrs[f_num]
+                if e > loud_thresh and loud_thresh > silence_thresh * 1.5:
+                    raw_cues[f_num] = MOUTH_WIDE
+                elif z > 0.28:
+                    raw_cues[f_num] = MOUTH_TEETH
+                else:
+                    ph_i = min(num_ph - 1, int((p_rank / float(len(w_frames))) * num_ph))
+                    raw_cues[f_num] = ph_list[ph_i]
+    elif voiced_mask.any():
+        telugu_phonemes = extract_telugu_phonemes(text) or [MOUTH_OPEN_A, MOUTH_OPEN_E, MOUTH_OPEN_O]
+        voiced_indices = [idx for idx, is_v in enumerate(voiced_mask) if is_v]
         num_voiced = len(voiced_indices)
         num_ph = len(telugu_phonemes)
         for rank, v_idx in enumerate(voiced_indices):
@@ -150,30 +212,9 @@ def extract_lipsync_cues(wav_path: str, fps: int = 24, text: str = "") -> list:
                 raw_cues[v_idx] = MOUTH_TEETH
             else:
                 ph_idx = min(num_ph - 1, int((rank / float(num_voiced)) * num_ph))
-                ph = telugu_phonemes[ph_idx]
-                raw_cues[v_idx] = ph
-    else:
-        for i in range(total_video_frames):
-            e = energies[i]
-            z = zcrs[i]
-            
-            if e < silence_thresh:
-                raw_cues[i] = MOUTH_CLOSED
-            elif e > loud_thresh and loud_thresh > silence_thresh:
-                raw_cues[i] = MOUTH_WIDE
-            elif z > 0.22:
-                raw_cues[i] = MOUTH_TEETH
-            else:
-                cycle = (i % 6)
-                if cycle in [0, 1]:
-                    raw_cues[i] = MOUTH_OPEN_A
-                elif cycle in [2, 3]:
-                    raw_cues[i] = MOUTH_OPEN_E
-                else:
-                    raw_cues[i] = MOUTH_OPEN_O
-                    
-    # Smoothing filter: enforce stable 2-3 frame viseme holds (Adobe Animate lip-sync principle)
-    # Prevents single-frame flickering/chatter while ensuring resting closed lips during silence
+                raw_cues[v_idx] = telugu_phonemes[ph_idx]
+                
+    # 2-Pass Hold Filter: Enforce 2-3 frame holds, strictly closed during silence
     smoothed_cues = list(raw_cues)
     n_c = len(smoothed_cues)
     
@@ -206,12 +247,3 @@ def extract_lipsync_cues(wav_path: str, fps: int = 24, text: str = "") -> list:
 def math_ceil(x):
     import math
     return math.ceil(x)
-
-if __name__ == "__main__":
-    test_wav = "D:/telugu-animated-stories/output/test_atha.wav"
-    if os.path.exists(test_wav):
-        cues = extract_lipsync_cues(test_wav, fps=24)
-        print(f"Generated {len(cues)} lipsync frames for {test_wav}")
-        print("Sample first 24 frames (1 second):", cues[:24])
-    else:
-        print(f"File not found: {test_wav}")

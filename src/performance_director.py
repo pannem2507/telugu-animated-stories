@@ -406,7 +406,7 @@ class ObjectManager(GenericPropManager):
                     y=730,
                     scale=0.95,
                     glow_color=(255, 215, 60),
-                    attachment_offsets={"waist_carry": {"right": (185, 245), "left": (100, 245)}}
+                    attachment_offsets={"waist_carry": {"right": (180, 420), "left": (140, 420)}}
                 )
         if prop_configs:
             for cfg in prop_configs:
